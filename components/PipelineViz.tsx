@@ -47,8 +47,8 @@ function eastern(iso: string) {
 
 function Inbox({ news, inView }: { news: NewsData; inView: boolean }) {
   const [open, setOpen] = useState(false);
-  const when = eastern(news.generatedAt);
   const b = news.briefing;
+  const when = eastern(b?.generatedAt ?? news.generatedAt);
   const shown = b ? (open ? b.sections : b.sections.slice(0, 2)) : [];
 
   return (
@@ -194,7 +194,7 @@ export default function PipelineViz({ news = null }: { news?: NewsData | null })
       <div className="flex items-center justify-between px-5 pt-5 font-mono text-[11px] uppercase tracking-[0.14em] text-muted sm:px-7 sm:pt-6">
         <span className="flex items-center gap-2">
           <span className="h-1.5 w-1.5 animate-pulse-soft rounded-full bg-mint" />
-          {news ? `Last run · ${eastern(news.generatedAt).time}` : "Nightly run · 11:57 PM"}
+          {news?.briefing ? `Nightly run · ${eastern(news.briefing.generatedAt).time}` : news ? `Last run · ${eastern(news.generatedAt).time}` : "Nightly run · 10 PM ET"}
         </span>
         <span className="hidden text-dim sm:inline">
           {news ? `${news.total} articles · ${news.stories.length} stories retrieved` : "scrape → store → summarize → send"}

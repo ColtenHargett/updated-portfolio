@@ -39,5 +39,5 @@ export type NewsData = {
   counts: { name: string; count: number }[];
   total: number;
   stories: NewsStory[];
-  briefing: { intro: string; sections: { title: string; body: string }[] } | null;
+  briefing: { intro: string; sections: { title: string; body: string }[]; generatedAt: string } | null;
 };

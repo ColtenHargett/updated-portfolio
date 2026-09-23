@@ -139,7 +139,9 @@ Context:
 ${context}`;
 }
 
-export function parseBriefing(text: string): NonNullable<NewsData["briefing"]> | null {
+type Briefing = NonNullable<NewsData["briefing"]>;
+
+export function parseBriefing(text: string): Omit<Briefing, "generatedAt"> | null {
   const lines = text
     .replace(/\*\*|__|#+\s?/g, "")
     .split(/\n+/)
@@ -182,7 +184,7 @@ export async function discoverFlashModels(key: string): Promise<string[]> {
     .map((m) => m.n);
 }
 
-type Attempt = { ok: true; briefing: NonNullable<NewsData["briefing"]> } | { ok: false; status: number; error: string };
+type Attempt = { ok: true; briefing: Omit<Briefing, "generatedAt"> } | { ok: false; status: number; error: string };
 
 async function generate(model: string, key: string, text: string, deadline: number): Promise<Attempt> {
   const res = await fetch(`${GEMINI}/models/${model}:generateContent`, {
@@ -263,7 +265,7 @@ async function summarize(stories: NewsStory[], articles: Article[]) {
         const r = await generate(model, key, text, deadline);
         if (r.ok) {
           console.log(`[news] briefing from ${model}: ${r.briefing.sections.length} sections`);
-          return r.briefing;
+          return { ...r.briefing, generatedAt: new Date().toISOString() };
         }
         errors.push(`${model}: ${r.error}`);
         // 404 (retired) or 429 (quota used up for this model): retrying won't help, try the next model.
@@ -279,16 +281,36 @@ async function summarize(stories: NewsStory[], articles: Article[]) {
 }
 
 /**
- * One briefing per day (Eastern time), like the original nightly email. The first
- * successful summary is cached and reused by every build and refresh that day, which
- * keeps usage to about one Gemini call a day and well inside the free tier.
- * Failures throw, and thrown results aren't cached, so they're retried next time.
+ * The briefing is a nightly edition, like the original project's email. An edition
+ * starts at 9pm Eastern; a Vercel cron job (vercel.json) calls /api/cron/briefing
+ * between 10 and 11pm to write it. The first successful summary of an edition is
+ * cached and reused by every build and refresh until the next night, so the site makes
+ * about one Gemini call a day. Failures throw and aren't cached, so they get retried.
  * (unstable_cache is the documented cache for apps not using Cache Components.)
  */
-async function dailyBriefing(stories: NewsStory[], articles: Article[]) {
+export const EDITION_START_HOUR_ET = 21;
+
+export function editionId(now = new Date()) {
+  const parts = Object.fromEntries(
+    new Intl.DateTimeFormat("en-US", {
+      timeZone: "America/New_York",
+      year: "numeric",
+      month: "numeric",
+      day: "numeric",
+      hour: "numeric",
+      hourCycle: "h23",
+    })
+      .formatToParts(now)
+      .map((p) => [p.type, p.value]),
+  );
+  const day = new Date(Date.UTC(+parts.year, +parts.month - 1, +parts.day));
+  if (+parts.hour % 24 < EDITION_START_HOUR_ET) day.setUTCDate(day.getUTCDate() - 1);
+  return day.toISOString().slice(0, 10);
+}
+
+async function nightlyBriefing(stories: NewsStory[], articles: Article[]) {
   if (!process.env.GEMINI_API_KEY) return null;
-  const day = new Intl.DateTimeFormat("en-CA", { timeZone: "America/New_York" }).format(new Date());
-  return unstable_cache(() => summarize(stories, articles), ["news-briefing", day], { revalidate: 86400 })();
+  return unstable_cache(() => summarize(stories, articles), ["news-briefing", editionId()], { revalidate: 172800 })();
 }
 
 // A build can render the page more than once; share one run (and one set of
@@ -321,7 +343,7 @@ async function collectNews(): Promise<NewsData | null> {
   const stories = groupStories(articles);
   let briefing: NewsData["briefing"] = null;
   try {
-    briefing = await dailyBriefing(stories, articles);
+    briefing = await nightlyBriefing(stories, articles);
   } catch (e) {
     console.error("[news] summary failed:", e);
   }
