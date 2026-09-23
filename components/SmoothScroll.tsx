@@ -18,6 +18,7 @@ export default function SmoothScroll() {
       const a = (e.target as HTMLElement).closest<HTMLAnchorElement>('a[href^="#"]');
       if (!a) return;
       const id = a.getAttribute("href")!;
+      if (id === "#main" || id === "#") return;
       const target = id === "#top" ? 0 : document.querySelector<HTMLElement>(id);
       if (target === null) return;
       e.preventDefault();
@@ -26,9 +27,17 @@ export default function SmoothScroll() {
     };
     document.addEventListener("click", onClick);
 
+    // Nav toggles data-menu-open on <html>; stop smooth scrolling underneath the overlay.
+    const mo = new MutationObserver(() => {
+      if (document.documentElement.dataset.menuOpen === "true") lenis.stop();
+      else lenis.start();
+    });
+    mo.observe(document.documentElement, { attributes: true, attributeFilter: ["data-menu-open"] });
+
     return () => {
       cancelAnimationFrame(raf);
       document.removeEventListener("click", onClick);
+      mo.disconnect();
       lenis.destroy();
     };
   }, []);

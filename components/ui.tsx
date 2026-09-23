@@ -29,17 +29,24 @@ export function SplitReveal({
   const Tag = motion[as];
   const words = text.split(" ");
   return (
-    <Tag ref={ref as never} className={className} aria-label={text}>
+    <Tag ref={ref as never} className={className}>
+      <span className="sr-only">{text}</span>
       {words.map((w, i) => (
         <span key={i} aria-hidden className="inline-block overflow-hidden pb-[0.12em] -mb-[0.12em] align-bottom">
-          <motion.span
-            className={`inline-block will-change-transform ${wordClassName}`}
-            initial={{ y: "110%", rotate: 4 }}
-            animate={show ? { y: "0%", rotate: 0 } : undefined}
-            transition={{ duration: 1.1, ease: easeOutExpo, delay: delay + i * stagger }}
-          >
-            {w}
-          </motion.span>
+          {immediate ? (
+            <span className={`intro-rise inline-block ${wordClassName}`} style={{ animationDelay: `${delay + i * stagger}s` }}>
+              {w}
+            </span>
+          ) : (
+            <motion.span
+              className={`inline-block will-change-transform ${wordClassName}`}
+              initial={{ y: "110%", rotate: 4 }}
+              animate={show ? { y: "0%", rotate: 0 } : undefined}
+              transition={{ duration: 1.1, ease: easeOutExpo, delay: delay + i * stagger }}
+            >
+              {w}
+            </motion.span>
+          )}
           {i < words.length - 1 && " "}
         </span>
       ))}

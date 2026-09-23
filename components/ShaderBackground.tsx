@@ -104,9 +104,14 @@ export default function ShaderBackground({ className = "" }: { className?: strin
     const uMouse = gl.getUniformLocation(prog, "uMouse");
     const uScroll = gl.getUniformLocation(prog, "uScroll");
 
-    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    // Without a real GPU (software rasterizers, some VMs and low-end devices) animating a
+    // full-screen shader would pin the CPU, so render one still frame instead.
+    const dbg = gl.getExtension("WEBGL_debug_renderer_info");
+    const renderer = String(dbg ? gl.getParameter(dbg.UNMASKED_RENDERER_WEBGL) : gl.getParameter(gl.RENDERER));
+    const software = /swiftshader|llvmpipe|software|basic render/i.test(renderer);
+    const still = software || window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     // Render below native resolution: the field is soft, so this is invisible and much cheaper.
-    const scale = Math.min(window.devicePixelRatio || 1, 2) * 0.5;
+    const scale = Math.min(window.devicePixelRatio || 1, 2) * (window.innerWidth < 768 ? 0.35 : 0.45);
 
     const resize = () => {
       const { clientWidth: w, clientHeight: h } = canvas;
@@ -133,23 +138,50 @@ export default function ShaderBackground({ className = "" }: { className?: strin
 
     const start = performance.now() - 20000;
     let raf = 0;
-    const frame = (now: number) => {
-      raf = requestAnimationFrame(frame);
-      if (!visible) return;
-      mx += (tmx - mx) * 0.04;
-      my += (tmy - my) * 0.04;
+    let lastDraw = 0;
+    const draw = (now: number) => {
       const h = canvas.clientHeight || 1;
-      gl.uniform1f(uTime, reduce ? 20 : (now - start) / 1000);
+      gl.uniform1f(uTime, still ? 20 : (now - start) / 1000);
       gl.uniform2f(uMouse, mx, my);
       gl.uniform1f(uScroll, Math.min(1, window.scrollY / h) * 0.85);
       gl.drawArrays(gl.TRIANGLES, 0, 3);
-      if (reduce) cancelAnimationFrame(raf);
     };
-    raf = requestAnimationFrame(frame);
-    canvas.dataset.ready = "true";
+    const frame = (now: number) => {
+      raf = requestAnimationFrame(frame);
+      // ~30fps is plenty for a slow-moving field and halves GPU work.
+      if (!visible || now - lastDraw < 32) return;
+      lastDraw = now;
+      mx += (tmx - mx) * 0.08;
+      my += (tmy - my) * 0.08;
+      draw(now);
+    };
+
+    // Let the page finish loading before spinning up the shader.
+    let cancelled = false;
+    let cleanupStill = () => {};
+    const idle = window.requestIdleCallback ?? ((cb: () => void) => window.setTimeout(cb, 200));
+    idle(() => {
+      if (cancelled) return;
+      if (still) {
+        draw(performance.now());
+        // Still redraw on resize so the frame stays sharp.
+        ro.disconnect();
+        const ro2 = new ResizeObserver(() => {
+          resize();
+          draw(performance.now());
+        });
+        ro2.observe(canvas);
+        cleanupStill = () => ro2.disconnect();
+      } else {
+        raf = requestAnimationFrame(frame);
+      }
+      canvas.dataset.ready = "true";
+    });
 
     return () => {
+      cancelled = true;
       cancelAnimationFrame(raf);
+      cleanupStill();
       ro.disconnect();
       io.disconnect();
       window.removeEventListener("pointermove", onMove);

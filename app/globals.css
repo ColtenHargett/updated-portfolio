@@ -74,6 +74,18 @@ body {
   padding-inline: var(--gutter);
 }
 
+/* CSS-driven entrance for above-the-fold content: starts at first paint, no JS needed. */
+@keyframes rise {
+  from { transform: translateY(110%) rotate(4deg); }
+  to { transform: translateY(0) rotate(0); }
+}
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(18px); }
+  to { opacity: 1; transform: none; }
+}
+.intro-rise { animation: rise 1.1s var(--ease-out-expo) both; }
+.intro-fade { animation: fade-up 1.2s var(--ease-out-expo) both; }
+
 .serif { font-family: var(--font-serif); font-weight: 400; letter-spacing: -0.01em; }
 
 .text-gradient {
@@ -172,6 +184,7 @@ body {
   *, *::before, *::after {
     animation-duration: 0.001ms !important;
     animation-iteration-count: 1 !important;
+    animation-delay: 0s !important;
     transition-duration: 0.001ms !important;
   }
   .grain { animation: none; }

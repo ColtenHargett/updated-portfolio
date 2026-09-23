@@ -67,7 +67,12 @@ function simulate(seed: number) {
   const wsum = weights.reduce((a, b) => a + b, 0);
   const predPct = matches.reduce((a, m, i) => a + m.nextHighPct * weights[i], 0) / wsum;
   const last = close[N - 1];
-  return { close, high, matches, qStart, predPct, predHigh: last * (1 + predPct), last };
+
+  // Cumulative price path of a window, indexed to 1.0 at its start, so shapes are comparable.
+  const shape = (s: number) => close.slice(s, s + W + 1).map((c) => c / close[s]);
+  const shapes = { query: shape(qStart), matches: matches.map((m) => shape(m.start)) };
+
+  return { close, high, matches, qStart, predPct, predHigh: last * (1 + predPct), last, shapes, weights: weights.map((w) => w / wsum) };
 }
 
 export default function StockViz() {
@@ -85,7 +90,7 @@ export default function StockViz() {
 
   const line = sim.close.map((c, i) => `${i ? "L" : "M"}${x(i).toFixed(1)},${y(c).toFixed(1)}`).join("");
   const area = `${line}L${x(N - 1)},${VH - PAD.b}L${x(0)},${VH - PAD.b}Z`;
-  const qx0 = x(sim.qStart + 1);
+  const qx0 = x(sim.qStart);
   const qx1 = x(N - 1);
   const px = x(N + 3);
   const py = y(sim.predHigh);
@@ -144,11 +149,11 @@ export default function StockViz() {
           <motion.g key={seed} initial={{ opacity: 0 }} animate={{ opacity: inView ? 1 : 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.4 }}>
             {/* matched historical windows + arcs linking them to today */}
             {sim.matches.map((m, i) => {
-              const x0 = x(m.start + 1);
+              const x0 = x(m.start);
               const x1 = x(m.start + W);
               const mid = (x0 + x1) / 2;
               const qmid = (qx0 + qx1) / 2;
-              const h = 18 + (qmid - mid) * 0.12;
+              const h = Math.min(18 + (qmid - mid) * 0.12, PAD.t - 22);
               return (
                 <motion.g key={m.start} initial={{ opacity: 0 }} animate={{ opacity: inView ? 1 : 0 }} transition={{ delay: 1.2 + i * 0.25, duration: 0.8 }}>
                   <rect x={x0} y={PAD.t - 8} width={x1 - x0} height={VH - PAD.t - PAD.b + 8} fill="rgba(179,166,255,0.08)" stroke="rgba(179,166,255,0.35)" strokeDasharray="3 4" rx="6" />
@@ -161,7 +166,7 @@ export default function StockViz() {
                     animate={{ pathLength: inView ? 1 : 0 }}
                     transition={{ delay: 1.4 + i * 0.25, duration: 1.1, ease: easeOutExpo }}
                   />
-                  <text x={mid} y={VH - PAD.b + 22} textAnchor="middle" className="fill-iris font-mono text-[11px]">
+                  <text x={mid} y={VH - PAD.b + 22} textAnchor="middle" className="fill-iris font-mono text-[11px] max-sm:hidden">
                     k{i + 1} · d={m.d.toFixed(2)}
                   </text>
                 </motion.g>
@@ -220,10 +225,80 @@ export default function StockViz() {
         )}
       </svg>
 
+      <PatternPanel sim={sim} seed={seed} />
+
       <div className="flex flex-wrap items-center gap-x-6 gap-y-2 border-t border-line px-5 py-4 font-mono text-[11px] uppercase tracking-[0.12em] text-muted sm:px-7">
         <span className="flex items-center gap-2"><span className="h-2 w-2 rounded-sm bg-peach/70" /> Current window</span>
         <span className="flex items-center gap-2"><span className="h-2 w-2 rounded-sm bg-iris/70" /> Nearest neighbors</span>
-        <span className="ml-auto text-dim">k={K} · inverse-distance weighted</span>
+        <span className="text-dim sm:ml-auto">k={K} · inverse-distance weighted</span>
+      </div>
+    </div>
+  );
+}
+
+function PatternPanel({ sim, seed }: { sim: ReturnType<typeof simulate>; seed: number }) {
+  const w = 220;
+  const h = 84;
+  const all = [...sim.shapes.query, ...sim.shapes.matches.flat()];
+  const lo = Math.min(...all);
+  const hi = Math.max(...all);
+  const path = (pts: number[]) =>
+    pts.map((v, i) => `${i ? "L" : "M"}${((i / W) * (w - 8) + 4).toFixed(1)},${(h - 6 - ((v - lo) / (hi - lo || 1)) * (h - 12)).toFixed(1)}`).join("");
+
+  return (
+    <div className="grid gap-5 border-t border-line px-5 py-5 sm:grid-cols-[auto_1fr] sm:items-center sm:gap-8 sm:px-7">
+      <div>
+        <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-dim">Pattern match · last {W} days</p>
+        <svg viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none" className="mt-2 h-[84px] w-full sm:w-[220px]" aria-hidden>
+          <line x1="4" x2={w - 4} y1={h - 6 - ((1 - lo) / (hi - lo || 1)) * (h - 12)} y2={h - 6 - ((1 - lo) / (hi - lo || 1)) * (h - 12)} stroke="rgba(255,255,255,0.08)" strokeDasharray="2 4" vectorEffect="non-scaling-stroke" />
+          {sim.shapes.matches.map((m, i) => (
+            <motion.path
+              key={`${seed}-${i}`}
+              d={path(m)}
+              fill="none"
+              stroke="#b3a6ff"
+              strokeOpacity={0.35 + sim.weights[i] * 0.6}
+              strokeWidth="1.4"
+              vectorEffect="non-scaling-stroke"
+              initial={{ pathLength: 0 }}
+              whileInView={{ pathLength: 1 }}
+              viewport={{ once: false }}
+              transition={{ duration: 1, delay: 0.2 + i * 0.15, ease: easeOutExpo }}
+            />
+          ))}
+          <motion.path
+            key={`${seed}-q`}
+            d={path(sim.shapes.query)}
+            fill="none"
+            stroke="#ffb38a"
+            strokeWidth="2.2"
+            strokeLinecap="round"
+            vectorEffect="non-scaling-stroke"
+            initial={{ pathLength: 0 }}
+            whileInView={{ pathLength: 1 }}
+            viewport={{ once: false }}
+            transition={{ duration: 1, ease: easeOutExpo }}
+          />
+        </svg>
+      </div>
+
+      <div className="grid grid-cols-3 gap-3 text-sm">
+        {sim.matches.map((m, i) => (
+          <div key={`${seed}-${m.start}`} className="rounded-xl border border-line bg-white/[0.02] p-3">
+            <p className="font-mono text-[10px] uppercase tracking-[0.12em] text-iris">
+              k{i + 1}
+              <span className="max-sm:hidden"> · day {m.start + W + 1}</span>
+            </p>
+            <p className="mt-1.5 font-medium tabular-nums">
+              {m.nextHighPct >= 0 ? "+" : ""}
+              {(m.nextHighPct * 100).toFixed(2)}%
+            </p>
+            <p className="mt-0.5 text-[11px] text-muted">
+              next-day high<span className="max-sm:hidden"> · </span><br className="sm:hidden" />
+              <span className="tabular-nums">{Math.round(sim.weights[i] * 100)}%</span> weight
+            </p>
+          </div>
+        ))}
       </div>
     </div>
   );

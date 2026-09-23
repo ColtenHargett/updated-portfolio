@@ -11,7 +11,7 @@ const statement =
 const emphasis = new Set(["messy,", "real-world", "genuinely", "useful:", "explain", "themselves,", "considered"]);
 
 function Word({ word, progress, range }: { word: string; progress: MotionValue<number>; range: [number, number] }) {
-  const opacity = useTransform(progress, range, [0.14, 1]);
+  const opacity = useTransform(progress, range, [0.2, 1]);
   const accent = emphasis.has(word);
   return (
     <motion.span style={{ opacity }} className={accent ? "serif italic text-gradient" : undefined}>

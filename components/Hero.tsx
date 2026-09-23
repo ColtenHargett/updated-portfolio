@@ -4,7 +4,7 @@ import { motion, useScroll, useTransform } from "motion/react";
 import { useRef } from "react";
 import ShaderBackground from "./ShaderBackground";
 import Clock from "./Clock";
-import { Magnetic, SplitReveal, easeOutExpo, ArrowUpRight } from "./ui";
+import { Magnetic, SplitReveal, ArrowUpRight } from "./ui";
 import { site } from "@/lib/data";
 
 export default function Hero() {
@@ -20,17 +20,15 @@ export default function Hero() {
       <div className="hairline-grid pointer-events-none absolute inset-0 [mask-image:radial-gradient(70%_60%_at_50%_40%,#000,transparent)]" />
 
       <motion.div style={{ y, opacity, scale }} className="wrap relative z-10 flex flex-1 flex-col justify-end pb-10 pt-32 sm:pb-14">
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1, ease: easeOutExpo, delay: 0.2 }}
-          className="glass mb-8 inline-flex w-fit items-center gap-2.5 rounded-full py-1.5 pl-2 pr-4 text-xs text-fg/80 sm:text-sm"
+        <div
+          style={{ animationDelay: "0.2s" }}
+          className="intro-fade glass mb-8 inline-flex w-fit items-center gap-2.5 rounded-full py-1.5 pl-2 pr-4 text-xs text-fg/80 sm:text-sm"
         >
           <span className="relative flex h-5 w-5 items-center justify-center rounded-full bg-emerald-400/15">
             <span className="h-1.5 w-1.5 animate-pulse-soft rounded-full bg-emerald-400" />
           </span>
           Open to internships &amp; research opportunities
-        </motion.div>
+        </div>
 
         <h1 className="sr-only">Colten Hargett, Computer Science and Data Science student building intelligent software</h1>
         <div aria-hidden className="select-none">
@@ -48,23 +46,19 @@ export default function Hero() {
               className="serif block text-[clamp(5.4rem,22.5vw,16rem)] italic leading-[0.9] tracking-[-0.03em]"
               wordClassName="text-gradient pr-[0.06em]"
             />
-            <motion.p
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 1.2, ease: easeOutExpo, delay: 0.9 }}
-              className="mb-[1.2vw] max-w-sm text-balance text-base leading-relaxed text-fg/75 sm:text-lg"
+            <p
+              style={{ animationDelay: "0.55s" }}
+              className="intro-fade mb-[1.2vw] max-w-sm text-balance text-base leading-relaxed text-fg/75 sm:text-lg"
             >
               I build <span className="serif text-[1.2em] italic text-fg">intelligent</span> software that turns messy, real-world data into
               something <span className="serif text-[1.2em] italic text-fg">genuinely useful</span>.
-            </motion.p>
+            </p>
           </div>
         </div>
 
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 1.4, delay: 1.1 }}
-          className="mt-12 flex flex-wrap items-center gap-3"
+        <div
+          style={{ animationDelay: "0.8s" }}
+          className="intro-fade mt-12 flex flex-wrap items-center gap-3"
         >
           <Magnetic>
             <a
@@ -88,13 +82,11 @@ export default function Hero() {
               Download résumé
             </a>
           </Magnetic>
-        </motion.div>
+        </div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1.2, ease: easeOutExpo, delay: 1.3 }}
-          className="mt-14 grid grid-cols-2 gap-6 border-t border-line pt-6 font-mono text-[11px] uppercase tracking-[0.14em] text-muted sm:grid-cols-4"
+        <div
+          style={{ animationDelay: "1s" }}
+          className="intro-fade mt-14 grid grid-cols-2 gap-6 border-t border-line pt-6 font-mono text-[11px] uppercase tracking-[0.14em] text-muted sm:grid-cols-4"
         >
           <div>
             <p className="text-dim">Studying</p>
@@ -118,7 +110,7 @@ export default function Hero() {
             </span>
             <span className="transition-colors group-hover:text-fg">Scroll</span>
           </a>
-        </motion.div>
+        </div>
       </motion.div>
     </section>
   );

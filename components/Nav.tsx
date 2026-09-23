@@ -6,9 +6,9 @@ import { site } from "@/lib/data";
 import { easeOutExpo } from "./ui";
 
 const links = [
+  { href: "#about", label: "About" },
   { href: "#work", label: "Work" },
   { href: "#archive", label: "Archive" },
-  { href: "#about", label: "About" },
   { href: "#journey", label: "Journey" },
 ];
 
@@ -40,6 +40,7 @@ export default function Nav() {
 
   useEffect(() => {
     document.documentElement.style.overflow = open ? "hidden" : "";
+    document.documentElement.dataset.menuOpen = String(open);
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
@@ -62,11 +63,11 @@ export default function Nav() {
             scrolled ? "glass shadow-[0_10px_40px_-10px_rgba(0,0,0,0.6)]" : "border border-transparent"
           }`}
         >
-          <a href="#top" className="group flex items-center gap-2.5" aria-label="Colten Hargett, back to top">
-            <span className="relative grid h-7 w-7 place-items-center rounded-full bg-fg text-[11px] font-semibold tracking-tight text-ink transition-transform duration-500 group-hover:rotate-[360deg]">
+          <a href="#top" className="group flex items-center gap-2.5">
+            <span aria-hidden className="relative grid h-7 w-7 place-items-center rounded-full bg-fg text-[11px] font-semibold tracking-tight text-ink transition-transform duration-500 group-hover:rotate-[360deg]">
               CH
             </span>
-            <span className="hidden text-sm font-medium tracking-tight sm:inline">Colten Hargett</span>
+            <span className="sr-only text-sm font-medium tracking-tight sm:not-sr-only">Colten Hargett</span>
           </a>
 
           <ul className="hidden items-center gap-1 md:flex">
