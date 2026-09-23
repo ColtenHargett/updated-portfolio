@@ -1,4 +1,5 @@
 import "server-only";
+import { unstable_cache } from "next/cache";
 import type { NewsData, NewsStory } from "./types";
 
 // A lightweight, serverless re-run of the News Summary Agent
@@ -277,6 +278,19 @@ async function summarize(stories: NewsStory[], articles: Article[]) {
   throw new Error(`Gemini failed. ${errors.join(" | ")}`);
 }
 
+/**
+ * One briefing per day (Eastern time), like the original nightly email. The first
+ * successful summary is cached and reused by every build and refresh that day, which
+ * keeps usage to about one Gemini call a day and well inside the free tier.
+ * Failures throw, and thrown results aren't cached, so they're retried next time.
+ * (unstable_cache is the documented cache for apps not using Cache Components.)
+ */
+async function dailyBriefing(stories: NewsStory[], articles: Article[]) {
+  if (!process.env.GEMINI_API_KEY) return null;
+  const day = new Intl.DateTimeFormat("en-CA", { timeZone: "America/New_York" }).format(new Date());
+  return unstable_cache(() => summarize(stories, articles), ["news-briefing", day], { revalidate: 86400 })();
+}
+
 // A build can render the page more than once; share one run (and one set of
 // Gemini calls) per process for a few minutes instead of repeating it.
 let recent: { at: number; run: Promise<NewsData | null> } | null = null;
@@ -307,7 +321,7 @@ async function collectNews(): Promise<NewsData | null> {
   const stories = groupStories(articles);
   let briefing: NewsData["briefing"] = null;
   try {
-    briefing = await summarize(stories, articles);
+    briefing = await dailyBriefing(stories, articles);
   } catch (e) {
     console.error("[news] summary failed:", e);
   }
