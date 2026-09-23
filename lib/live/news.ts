@@ -175,9 +175,9 @@ export async function discoverFlashModels(key: string): Promise<string[]> {
   return models
     .filter((m) => m.name && m.supportedGenerationMethods?.includes("generateContent"))
     .map((m) => m.name!.replace(/^models\//, ""))
-    .filter((n) => /^gemini-[\d.]+-flash/.test(n) && !/lite|image|tts|audio|live|embed|exp|thinking|robotics|computer/.test(n))
-    .map((n) => ({ n, v: parseFloat(n.match(/^gemini-([\d.]+)/)![1]), preview: /preview/.test(n) }))
-    .sort((a, b) => b.v - a.v || Number(a.preview) - Number(b.preview) || a.n.length - b.n.length)
+    .filter((n) => /^gemini-[\d.]+-flash/.test(n) && !/image|tts|audio|live|embed|exp|thinking|robotics|computer/.test(n))
+    .map((n) => ({ n, v: parseFloat(n.match(/^gemini-([\d.]+)/)![1]), preview: /preview/.test(n), lite: /lite/.test(n) }))
+    .sort((a, b) => Number(a.lite) - Number(b.lite) || b.v - a.v || Number(a.preview) - Number(b.preview) || a.n.length - b.n.length)
     .map((m) => m.n);
 }
 
@@ -236,7 +236,8 @@ async function summarize(stories: NewsStory[], articles: Article[]) {
   // "latest Flash" alias, then whatever Flash models the API says this key can use.
   // Overload / rate-limit errors (429, 5xx) are retried with a short backoff.
   const deadline = Date.now() + 45000; // stay well inside Next's 60s page-generation limit
-  const queue = [process.env.GEMINI_MODEL, "gemini-flash-latest"].filter(Boolean) as string[];
+  // Flash first for quality; Flash-Lite as backup, since it sees less demand and has its own free-tier quota.
+  const queue = [process.env.GEMINI_MODEL, "gemini-flash-latest", "gemini-flash-lite-latest"].filter(Boolean) as string[];
   const tried = new Set<string>();
   const errors: string[] = [];
   let discovered = false;
@@ -246,7 +247,8 @@ async function summarize(stories: NewsStory[], articles: Article[]) {
     if (!model && !discovered) {
       discovered = true;
       try {
-        queue.push(...(await discoverFlashModels(key)).slice(0, 2));
+        const found = await discoverFlashModels(key);
+        queue.push(...found.filter((m) => !m.includes("lite")).slice(0, 2), ...found.filter((m) => m.includes("lite")).slice(0, 1));
       } catch (e) {
         errors.push(e instanceof Error ? e.message : String(e));
       }
@@ -263,9 +265,9 @@ async function summarize(stories: NewsStory[], articles: Article[]) {
           return r.briefing;
         }
         errors.push(`${model}: ${r.error}`);
-        if (r.status !== 429 && r.status < 500) break; // 404 etc: move on to the next model
-        // Free-tier rate limits (429) need a longer pause than a brief overload (503).
-        if (attempt === 0) await sleep(r.status === 429 ? 6000 : 2000);
+        // 404 (retired) or 429 (quota used up for this model): retrying won't help, try the next model.
+        if (r.status < 500) break;
+        if (attempt === 0) await sleep(2500); // brief overload (503): one retry after a pause
       } catch (e) {
         errors.push(`${model}: ${e instanceof Error ? e.message : String(e)}`);
         if (attempt === 0) await sleep(2000);
