@@ -50,8 +50,8 @@ export default function Hero() {
               style={{ animationDelay: "0.55s" }}
               className="intro-fade mb-[1.2vw] max-w-sm text-balance text-base leading-relaxed text-fg/75 sm:text-lg"
             >
-              CS and data science at Loyola Maryland. I build things that work with{" "}
-              <span className="serif text-[1.2em] italic text-fg">real data</span>.
+              I study computer science and data science at Loyola Maryland. I build machine learning models and automation tools, then test them on{" "}
+              <span className="serif text-[1.2em] italic text-fg">real data</span> to see if they hold up.
             </p>
           </div>
         </div>

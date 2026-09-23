@@ -46,6 +46,7 @@ export type Featured = {
   title: string;
   kicker: string;
   summary: string;
+  takeaway: string;
   approach: string[];
   stats: { value: string; label: string }[];
   stack: string[];
@@ -60,11 +61,15 @@ export const featured: Featured[] = [
     title: "Stock Market Predictor",
     kicker: "Machine Learning · Forecasting",
     summary:
-      "Can a stock's past predict tomorrow's high? This model finds the days in history that looked most like today and averages what happened next.",
+      "Can a stock's recent behavior predict tomorrow's high? My model turns each trading day into 11 numbers, finds the five days in the past five years that looked most like today, and averages what happened next. It's simple on purpose: every prediction comes with the exact days behind it.",
+    // CHECK: written in your voice. Make sure it matches what you actually took away.
+    takeaway:
+      "The hardest part wasn't the model, it was testing it fairly. Walk-forward backtesting means it never sees the future, which is an easy mistake to make with market data.",
     approach: [
-      "11 features per trading day: returns, price spreads, volume, moving averages and volatility",
-      "Finds the 5 most similar past days and weights the closest ones most",
-      "Backtested one day at a time, using only data it would have had then",
+      "Pulls daily prices with yfinance and engineers 11 features: returns, spreads, volume change, moving-average gaps and volatility",
+      "Scales the features and uses k-nearest neighbors to find the 5 most similar days in history",
+      "Weights the closest matches most and averages their next-day highs",
+      "Backtests one day at a time against two simple baselines, using only data available at that point",
     ],
     stats: [
       { value: "~1%", label: "Average error" },
@@ -80,12 +85,16 @@ export const featured: Featured[] = [
     index: "02",
     title: "News Summary Agent",
     kicker: "AI Agents · Automation",
+    // CHECK: the "five different sites" motivation is my guess
     summary:
-      "A pipeline that reads the news so I don't have to. Every night it pulls the last 24 hours from five outlets and has Gemini write a short briefing that gets emailed out.",
+      "I wanted the day's news without opening five different sites, so I built a pipeline that does the reading for me. Every night it pulls the last 24 hours from NPR, BBC, ABC, CBS and NBC, stores the articles in a vector database, and has Gemini write a short, newspaper-style briefing that gets emailed out.",
+    takeaway:
+      "Keeping an LLM accurate came down to what it's allowed to see. It only gets the articles the pipeline retrieved, and the prompt tells it not to add anything else.",
     approach: [
-      "Scrapes NPR, BBC, ABC, CBS and NBC through their RSS feeds",
-      "Splits articles into chunks and stores them in ChromaDB",
-      "Gemini writes the recap from those articles only, and a scheduler sends it nightly",
+      "Scrapes all five RSS feeds and pulls the full text of every article from the last 24 hours",
+      "Splits the articles into chunks with LangChain and stores them in ChromaDB",
+      "Gemini writes the briefing using only that retrieved context",
+      "A scheduler runs the whole thing nightly and emails the result",
     ],
     stats: [
       { value: "5", label: "News sources" },
@@ -207,6 +216,21 @@ export const archive: ArchiveItem[] = [
   },
 ];
 
+export const strengths = [
+  {
+    title: "I test my own work",
+    body: "Every model I build gets a baseline and an honest backtest. My stock predictor had to beat two simple strategies on four different stocks before I called it done.",
+  },
+  {
+    title: "I've led a team",
+    body: "Managing 30+ lifeguards meant scheduling, training and handling emergencies with first responders. I know how to stay calm, communicate clearly and keep people on the same page.",
+  },
+  {
+    title: "I finish what I start",
+    body: "My projects run end to end, from raw data to a result on a schedule. The two demos on this page are running on live data right now.",
+  },
+];
+
 export type JourneyItem = {
   period: string;
   title: string;
@@ -223,7 +247,7 @@ export const journey: JourneyItem[] = [
     title: "B.S. Computer Science & B.S. Data Science",
     org: "Loyola University Maryland",
     place: "Baltimore, MD",
-    body: "Double major. Building ML and automation projects on the side.",
+    body: "Double-majoring in computer science and data science, and building machine learning and automation projects alongside my coursework.",
     points: ["Hyman Science Scholars Program", "Alpha Kappa Psi", "Information Systems Student Organization"],
     kind: "education",
   },
@@ -232,7 +256,7 @@ export const journey: JourneyItem[] = [
     title: "Head Guard",
     org: "Coastline Aquatics",
     place: "Glen Allen, VA",
-    body: "Ran the guard team day to day and trained new hires.",
+    body: "Supervised the lifeguard team, trained new hires and set up follow-up processes that cut down on repeat issues.",
     kind: "leadership",
   },
   {
@@ -245,10 +269,10 @@ export const journey: JourneyItem[] = [
   },
   {
     period: "2021 — 2025",
-    title: "Advanced Diploma, 4.3 GPA",
+    title: "Advanced Diploma",
     org: "Deep Run High School",
     place: "Glen Allen, VA",
-    body: "Co-founded the Musical History Club. FBLA and the Finance & Investment Club.",
+    body: "Graduated with a 4.3 weighted GPA. Co-founded and served as vice president of the Musical History Club, and was part of FBLA and the Finance & Investment Club.",
     kind: "education",
   },
   {
@@ -256,7 +280,7 @@ export const journey: JourneyItem[] = [
     title: "Volunteer",
     org: "James River Greyhounds",
     place: "Richmond, VA",
-    body: "Help run raffles that raise about $2,500 each and help out at adoption events.",
+    body: "Help plan raffles that raise about $2,500 each and work with the organization's president on adoption events.",
     kind: "community",
   },
 ];
@@ -269,15 +293,18 @@ export const bio = {
   // Leave as null to show the monogram card instead.
   photo: null as string | null,
   paragraphs: [
-    "I grew up in Glen Allen, Virginia, outside Richmond. Now I'm at Loyola in Baltimore as part of the Hyman Science Scholars program.",
-    "Before I wrote much code, I spent three summers running a pool with a staff of 30+ lifeguards. That's where I learned to stay calm when something goes wrong and to own a problem until it's fixed.",
+    "I grew up in Glen Allen, Virginia, just outside Richmond, and now I'm at Loyola University Maryland in Baltimore as part of the Hyman Science Scholars program.",
+    "Most of my projects start with a question I want answered. Can past market behavior predict tomorrow's high? Can a script read the news for me? I build the thing, test it honestly, and keep going until the results hold up.",
+    "Before any of that, I spent three summers managing a pool and a staff of 30+ lifeguards. It taught me to stay calm under pressure, communicate clearly and own a problem until it's solved, which matters just as much on a software team.",
     // CHECK: add a hobby or two here if you want
-    "Outside of class, I've volunteered with James River Greyhounds since 2020.",
+    "Outside of class, I've volunteered with James River Greyhounds since 2020, helping run fundraisers and adoption events.",
   ],
   facts: [
     { label: "Based in", value: "Baltimore, MD" },
-    { label: "Studying", value: "CS + Data Science, '29" },
-    { label: "Into", value: "Machine learning, data, automation" },
-    { label: "Looking for", value: "Internships and research" },
+    { label: "From", value: "Glen Allen, VA" },
+    { label: "Studying", value: "B.S. CS + B.S. Data Science, '29" },
+    { label: "Into", value: "Machine learning, data tools, automation" },
+    { label: "Looking for", value: "Software, data and ML internships" },
+    { label: "Involved in", value: "Alpha Kappa Psi · ISSO" },
   ],
 };

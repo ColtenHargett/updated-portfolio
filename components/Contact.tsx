@@ -42,7 +42,7 @@ export default function Contact() {
         <div className="mt-14 grid gap-10 lg:grid-cols-12 lg:items-end">
           <Reveal className="lg:col-span-5">
             <p className="max-w-md text-lg leading-relaxed text-fg/75">
-              I&apos;m looking for internships and research in software, data science or machine learning. Email is the best way to reach me.
+              I&apos;m looking for internships and research opportunities in software engineering, data science or machine learning. If you&apos;re hiring, working on something interesting or just want to talk about a project, send me an email.
             </p>
           </Reveal>
 

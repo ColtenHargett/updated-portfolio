@@ -89,7 +89,12 @@ function CaseStudy({ p, flip, live }: { p: Featured; flip: boolean; live: Live }
 
         <div className="lg:col-span-5">
           <Reveal>
-            <p className="text-pretty text-xl leading-relaxed text-fg/90 sm:text-2xl sm:leading-snug">{p.summary}</p>
+            <p className="text-pretty text-lg leading-relaxed text-fg/90 sm:text-xl">{p.summary}</p>
+          </Reveal>
+
+          <Reveal delay={0.05} className="mt-8 border-l-2 border-iris/50 pl-5">
+            <p className="eyebrow">What I learned</p>
+            <p className="mt-2 text-pretty leading-relaxed text-fg/75">{p.takeaway}</p>
           </Reveal>
 
           <div className="mt-10">
@@ -147,7 +152,7 @@ export default function Work({ stocks = null, news = null }: Partial<Live>) {
             <SplitReveal text="proudest of." className="serif block italic tracking-[-0.02em]" wordClassName="text-gradient pr-[0.05em]" delay={0.15} />
           </h2>
           <Reveal className="max-w-sm text-muted">
-            <p>Both demos run on real data and refresh every few hours.</p>
+            <p>Both demos below run on real data. The site re-runs them every few hours, so what you see is current.</p>
           </Reveal>
         </div>
 
