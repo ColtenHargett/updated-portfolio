@@ -12,7 +12,7 @@ export const site = {
   resume: "/resume.pdf",
   url: "https://coltenhargett.com",
   description:
-    "Colten Hargett is a Computer Science and Data Science student at Loyola University Maryland building machine learning systems, AI automation pipelines, and thoughtful software.",
+    "Colten Hargett studies computer science and data science at Loyola University Maryland. Projects in machine learning, AI and automation.",
 };
 
 export function repoLink(path: string) {
@@ -46,7 +46,6 @@ export type Featured = {
   title: string;
   kicker: string;
   summary: string;
-  problem: string;
   approach: string[];
   stats: { value: string; label: string }[];
   stack: string[];
@@ -61,19 +60,16 @@ export const featured: Featured[] = [
     title: "Stock Market Predictor",
     kicker: "Machine Learning · Forecasting",
     summary:
-      "A similarity-based forecasting engine that predicts a stock's next-day high by finding the moments in history that looked most like today.",
-    problem:
-      "Most market models are black boxes. I wanted one I could actually reason about: every prediction explained by the real historical days behind it.",
+      "Can a stock's past predict tomorrow's high? This model finds the days in history that looked most like today and averages what happened next.",
     approach: [
-      "Engineered 11 features per trading day: returns, spreads, volume change, moving-average gaps and volatility",
-      "Standardized feature space + k-nearest-neighbors to find the most similar historical days",
-      "Inverse-distance weighting, so the closest matches carry the most influence",
-      "Walk-forward backtesting that only ever sees the past, benchmarked against two naive baselines",
+      "11 features per trading day: returns, price spreads, volume, moving averages and volatility",
+      "Finds the 5 most similar past days and weights the closest ones most",
+      "Backtested one day at a time, using only data it would have had then",
     ],
     stats: [
-      { value: "~1%", label: "Mean abs. % error" },
-      { value: "11", label: "Engineered features" },
-      { value: "4 / 4", label: "Tickers beat baseline" },
+      { value: "~1%", label: "Average error" },
+      { value: "11", label: "Features per day" },
+      { value: "4 / 4", label: "Stocks beat baseline" },
     ],
     stack: ["Python", "scikit-learn", "pandas", "NumPy", "yfinance"],
     path: "AI and Machine Learning/Stock Market Predictor/",
@@ -85,18 +81,15 @@ export const featured: Featured[] = [
     title: "News Summary Agent",
     kicker: "AI Agents · Automation",
     summary:
-      "An autonomous pipeline that reads the day's news from five major outlets, indexes it into a vector database, and delivers a newspaper-style briefing by email every night.",
-    problem:
-      "Keeping up with the news takes time and a dozen tabs. I wanted a system that does the reading for me and hands back one clean, trustworthy summary.",
+      "A pipeline that reads the news so I don't have to. Every night it pulls the last 24 hours from five outlets and has Gemini write a short briefing that gets emailed out.",
     approach: [
-      "RSS scraper pulls the last 24 hours from NPR, BBC, ABC, CBS and NBC and extracts full article text",
-      "Articles are chunked with LangChain and embedded into a persistent ChromaDB collection",
-      "Gemini writes a grounded, editor-style recap using only the retrieved context",
-      "A scheduler runs the full pipeline nightly and emails the briefing out automatically",
+      "Scrapes NPR, BBC, ABC, CBS and NBC through their RSS feeds",
+      "Splits articles into chunks and stores them in ChromaDB",
+      "Gemini writes the recap from those articles only, and a scheduler sends it nightly",
     ],
     stats: [
       { value: "5", label: "News sources" },
-      { value: "24h", label: "Rolling window" },
+      { value: "24h", label: "Window" },
       { value: "0", label: "Manual steps" },
     ],
     stack: ["Python", "Gemini", "ChromaDB", "LangChain", "RSS"],
@@ -116,120 +109,101 @@ export type ArchiveItem = {
 export const archive: ArchiveItem[] = [
   {
     title: "Stock Market Predictor",
-    description: "k-NN forecasting of next-day highs with walk-forward backtesting.",
+    description: "Predicts next-day highs from similar past days.",
     category: "AI / ML",
     tags: ["scikit-learn", "pandas"],
     path: "AI and Machine Learning/Stock Market Predictor/",
   },
   {
     title: "News Summary Agent",
-    description: "Scrape → embed → summarize → email, fully automated every night.",
+    description: "Reads the news and emails a nightly AI summary.",
     category: "AI / ML",
     tags: ["Gemini", "ChromaDB"],
     path: "AI and Machine Learning/News Summary Agent/",
   },
   {
     title: "Movie Analyzer",
-    description: "Parses movie datasets and produces structured, queryable output.",
+    description: "Reads movie data from CSVs and answers questions about it.",
     category: "Python",
     tags: ["Data", "CSV"],
     path: "Python/Movie Analyzer/",
   },
   {
     title: "Restaurant Analyzer",
-    description: "Reads restaurant records from files and surfaces useful insights.",
+    description: "Reads restaurant data from files and analyzes it.",
     category: "Python",
     tags: ["Data", "Files"],
     path: "Python/Restaurant Analyzer/",
   },
   {
     title: "Song Analyzer",
-    description: "Processes song and artist catalogs with custom analysis functions.",
+    description: "Sorts and searches song and artist lists.",
     category: "Python",
     tags: ["Data", "Files"],
     path: "Python/Song Analyzer/",
   },
   {
     title: "Morse Code Translator",
-    description: "Bidirectional text ↔ Morse translation, including file input.",
+    description: "Translates text to Morse code and back.",
     category: "Python",
     tags: ["Parsing"],
     path: "Python/Morse Code Translator/",
   },
   {
     title: "Dice Rolling Simulator",
-    description: "Simulates rolls and visualizes how outcomes distribute over time.",
+    description: "Rolls dice and shows how the results spread out.",
     category: "Python",
     tags: ["Simulation"],
     path: "Python/Dice Rolling Simulator.py",
   },
   {
     title: "ASCII Art Maker",
-    description: "Turns plain text input into generated ASCII artwork.",
+    description: "Turns text into ASCII art.",
     category: "Python",
     tags: ["CLI"],
     path: "Python/Ascii Art Maker.py",
   },
   {
     title: "Hangman",
-    description: "Command-line hangman with thorough input validation.",
+    description: "Hangman in the terminal.",
     category: "Python",
     tags: ["Game"],
     path: "Python/Hangman.py",
   },
   {
     title: "Rock, Paper, Scissors+",
-    description: "A five-choice strategy variant with custom rules and outcomes.",
+    description: "Rock, paper, scissors with five options instead of three.",
     category: "Python",
     tags: ["Game"],
     path: "Python/Rock,Paper,Scissors Rendition.py",
   },
   {
     title: "ATM Simulation",
-    description: "Account balances, transactions and input checking in the console.",
+    description: "A console ATM with deposits, withdrawals and balances.",
     category: "Java",
     tags: ["OOP", "CLI"],
     path: "Java/ATM Simulation.java",
   },
   {
     title: "Grocery List Maker",
-    description: "Build, edit and manage grocery lists interactively.",
+    description: "Make and edit a grocery list in the console.",
     category: "Java",
     tags: ["Collections", "CLI"],
     path: "Java/Grocery List Maker.java",
   },
   {
     title: "Personality Test",
-    description: "An interactive, scored personality quiz for the command line.",
+    description: "A scored personality quiz in the terminal.",
     category: "Java",
     tags: ["CLI"],
     path: "Java/Personality Test.java",
   },
   {
     title: "Java Exercises",
-    description: "Eight problem sets drilling core language fundamentals.",
+    description: "Eight practice problems from my Java course.",
     category: "Java",
     tags: ["Fundamentals"],
     path: "Java/Exercises",
-  },
-];
-
-export const principles = [
-  {
-    title: "Clarity over cleverness",
-    body: "Code should explain itself. If something needs a paragraph of comments, it usually wants to be simpler.",
-  },
-  {
-    title: "Built for messy reality",
-    body: "Real data is never clean. I validate inputs and design for edge cases so things keep working when conditions aren't ideal.",
-  },
-  {
-    title: "Measure, don't guess",
-    body: "Every model gets a baseline and a backtest. If it can't beat the simple answer, it isn't done yet.",
-  },
-  {
-    title: "AI where it earns its place",
-    body: "I reach for machine learning when it produces measurable value, not to check a box.",
   },
 ];
 
@@ -249,7 +223,7 @@ export const journey: JourneyItem[] = [
     title: "B.S. Computer Science & B.S. Data Science",
     org: "Loyola University Maryland",
     place: "Baltimore, MD",
-    body: "Double-majoring at the intersection of software engineering and data. Building ML and automation projects alongside coursework.",
+    body: "Double major. Building ML and automation projects on the side.",
     points: ["Hyman Science Scholars Program", "Alpha Kappa Psi", "Information Systems Student Organization"],
     kind: "education",
   },
@@ -258,7 +232,7 @@ export const journey: JourneyItem[] = [
     title: "Head Guard",
     org: "Coastline Aquatics",
     place: "Glen Allen, VA",
-    body: "Supervised lifeguard teams, ran onboarding and training, and designed follow-up processes that cut down on recurring issues.",
+    body: "Ran the guard team day to day and trained new hires.",
     kind: "leadership",
   },
   {
@@ -266,15 +240,15 @@ export const journey: JourneyItem[] = [
     title: "Pool Manager",
     org: "SwimMetro Management",
     place: "Glen Allen, VA",
-    body: "Led 30+ lifeguards across three seasons: scheduling, training, patron events and incident response alongside first responders.",
+    body: "Managed 30+ lifeguards for three summers: scheduling, training, events, and handling emergencies with first responders.",
     kind: "leadership",
   },
   {
     period: "2021 — 2025",
-    title: "Advanced Diploma · 4.3 Weighted GPA",
+    title: "Advanced Diploma, 4.3 GPA",
     org: "Deep Run High School",
     place: "Glen Allen, VA",
-    body: "Co-founded and served as Vice President of the Musical History Club. Member of FBLA and the Finance & Investment Club.",
+    body: "Co-founded the Musical History Club. FBLA and the Finance & Investment Club.",
     kind: "education",
   },
   {
@@ -282,16 +256,9 @@ export const journey: JourneyItem[] = [
     title: "Volunteer",
     org: "James River Greyhounds",
     place: "Richmond, VA",
-    body: "Help plan bi-annual raffles averaging $2,500 raised and work directly with the organization's president on adoption events.",
+    body: "Help run raffles that raise about $2,500 each and help out at adoption events.",
     kind: "community",
   },
-];
-
-export const stats = [
-  { value: 14, suffix: "", label: "Projects built" },
-  { value: 30, suffix: "+", label: "People led" },
-  { value: 2, suffix: "", label: "Majors" },
-  { value: 4.3, suffix: "", label: "HS weighted GPA", decimals: 1 },
 ];
 
 // ── Personal bio (About section) ─────────────────────────────────────────────
@@ -301,22 +268,16 @@ export const bio = {
   // Drop a photo in /public (e.g. /public/colten.jpg) and set its path here.
   // Leave as null to show the monogram card instead.
   photo: null as string | null,
-  heading: "A bit more about me",
   paragraphs: [
-    "I grew up in Glen Allen, Virginia, just outside Richmond, and I'm now in Baltimore studying Computer Science and Data Science at Loyola University Maryland, where I'm part of the Hyman Science Scholars Program.",
-    // CHECK: motivation is inferred from the projects
-    "I like the moment when a pile of raw data turns into something you can actually use. That's why I paired CS with data science, and it's what most of my projects chase: a forecasting model that can explain its own predictions, or an agent that reads the day's news so you don't have to.",
-    "Before I was writing models, I spent three summers managing a pool and leading a staff of 30+ lifeguards. It taught me to stay calm under pressure, own problems from start to finish, and make sure the people around me have what they need. I bring that same mindset to software.",
-    // CHECK: "keeping an eye on the markets" is inferred from the Finance & Investment Club and the stock project
-    "Off the clock, I've volunteered with James River Greyhounds since 2020, I co-founded my high school's Musical History Club, and I usually have one eye on the markets.",
+    "I grew up in Glen Allen, Virginia, outside Richmond. Now I'm at Loyola in Baltimore as part of the Hyman Science Scholars program.",
+    "Before I wrote much code, I spent three summers running a pool with a staff of 30+ lifeguards. That's where I learned to stay calm when something goes wrong and to own a problem until it's fixed.",
+    // CHECK: add a hobby or two here if you want
+    "Outside of class, I've volunteered with James River Greyhounds since 2020.",
   ],
   facts: [
     { label: "Based in", value: "Baltimore, MD" },
-    { label: "From", value: "Glen Allen, VA" },
-    { label: "Studying", value: "B.S. CS + B.S. Data Science · '29" },
-    { label: "Interested in", value: "Machine learning, data tools, automation" },
-    { label: "Looking for", value: "Internships & research" },
-    // CHECK: swap in whatever you actually do for fun
-    { label: "Off the clock", value: "Greyhound rescue, music history, markets" },
+    { label: "Studying", value: "CS + Data Science, '29" },
+    { label: "Into", value: "Machine learning, data, automation" },
+    { label: "Looking for", value: "Internships and research" },
   ],
 };

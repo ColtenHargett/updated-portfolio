@@ -35,14 +35,14 @@ export default function Contact() {
         <SectionLabel index="05">Contact</SectionLabel>
 
         <h2 className="mt-10 text-[clamp(3.2rem,11vw,10.5rem)] font-medium leading-[0.88] tracking-[-0.055em]">
-          <SplitReveal text="Let's build" className="block" />
-          <SplitReveal text="something great." className="serif block italic tracking-[-0.025em]" wordClassName="text-gradient pr-[0.05em]" delay={0.15} />
+          <SplitReveal text="Let's" className="block" />
+          <SplitReveal text="talk." className="serif block italic tracking-[-0.025em]" wordClassName="text-gradient pr-[0.05em]" delay={0.15} />
         </h2>
 
         <div className="mt-14 grid gap-10 lg:grid-cols-12 lg:items-end">
           <Reveal className="lg:col-span-5">
             <p className="max-w-md text-lg leading-relaxed text-fg/75">
-              I&apos;m looking for internships, research and project collaborations in software engineering, data science and machine learning. The fastest way to reach me is email. I usually reply within a day.
+              I&apos;m looking for internships and research in software, data science or machine learning. Email is the best way to reach me.
             </p>
           </Reveal>
 

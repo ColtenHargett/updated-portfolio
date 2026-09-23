@@ -17,21 +17,15 @@ export default function Journey() {
   const scaleY = useSpring(scrollYProgress, { stiffness: 120, damping: 30 });
 
   return (
-    <section id="journey" className="relative py-28 sm:py-36">
+    <section id="journey" className="relative pb-28 pt-12 sm:pb-36 sm:pt-16">
       <div className="wrap grid gap-16 lg:grid-cols-12">
         <div className="lg:col-span-4">
           <div className="lg:sticky lg:top-32">
             <SectionLabel index="04">Journey</SectionLabel>
             <h2 className="mt-8 text-[clamp(2.8rem,6vw,5.2rem)] font-medium leading-[0.92] tracking-[-0.05em]">
-              <SplitReveal text="Learning," className="block" />
-              <SplitReveal text="leading," className="block" delay={0.08} />
-              <SplitReveal text="building." className="serif block italic tracking-[-0.02em]" wordClassName="text-gradient pr-[0.05em]" delay={0.16} />
+              <SplitReveal text="Where I've" className="block" />
+              <SplitReveal text="been." className="serif block italic tracking-[-0.02em]" wordClassName="text-gradient pr-[0.05em]" delay={0.1} />
             </h2>
-            <Reveal delay={0.2}>
-              <p className="mt-8 max-w-sm leading-relaxed text-muted">
-                The classrooms, pool decks and volunteer events that shaped how I learn, lead and build. Leadership came first, and it still shapes how I work on every project.
-              </p>
-            </Reveal>
           </div>
         </div>
 

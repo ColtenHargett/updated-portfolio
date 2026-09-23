@@ -98,7 +98,7 @@ export default function Nav() {
             >
               <span className="relative z-10 flex items-center gap-2">
                 <span className="h-1.5 w-1.5 animate-pulse-soft rounded-full bg-emerald-500" />
-                Let&apos;s talk
+                Contact
               </span>
               <span className="absolute inset-0 translate-y-full bg-gradient-to-r from-iris to-peach transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:translate-y-0" />
             </a>

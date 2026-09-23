@@ -65,8 +65,7 @@ export default function Bio() {
       <div className="lg:col-span-7">
         <Reveal>
           <h3 className="text-[clamp(2rem,4.5vw,3.6rem)] font-medium leading-[1] tracking-[-0.04em]">
-            {bio.heading.split(" ").slice(0, -2).join(" ")}{" "}
-            <span className="serif italic text-gradient pr-[0.05em]">{bio.heading.split(" ").slice(-2).join(" ")}</span>
+            Hi, I&apos;m <span className="serif italic text-gradient pr-[0.05em]">Colten.</span>
           </h3>
         </Reveal>
 

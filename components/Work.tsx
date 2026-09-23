@@ -19,14 +19,14 @@ function liveStats(p: Featured, { stocks, news }: Live): Featured["stats"] {
     const beat = t.filter((x) => x.backtest.modelMape < Math.min(x.backtest.closeMape, x.backtest.highMape)).length;
     const preds = t.reduce((s, x) => s + x.backtest.predictions, 0);
     return [
-      { value: `${(avg * 100).toFixed(2)}%`, label: "Avg. error, live backtest" },
-      { value: `${beat} / ${t.length}`, label: "Tickers beating both baselines" },
-      { value: preds.toLocaleString("en-US"), label: "Walk-forward predictions" },
+      { value: `${(avg * 100).toFixed(2)}%`, label: "Average error" },
+      { value: `${beat} / ${t.length}`, label: "Stocks beating both baselines" },
+      { value: preds.toLocaleString("en-US"), label: "Predictions tested" },
     ];
   }
   if (p.visual === "pipeline" && news) {
     return [
-      { value: String(news.total), label: "Articles read, last 24h" },
+      { value: String(news.total), label: "Articles read today" },
       { value: String(news.counts.filter((c) => c.count > 0).length), label: "News sources" },
       { value: "0", label: "Manual steps" },
     ];
@@ -92,11 +92,6 @@ function CaseStudy({ p, flip, live }: { p: Featured; flip: boolean; live: Live }
             <p className="text-pretty text-xl leading-relaxed text-fg/90 sm:text-2xl sm:leading-snug">{p.summary}</p>
           </Reveal>
 
-          <Reveal delay={0.05} className="mt-10">
-            <p className="eyebrow">The problem</p>
-            <p className="mt-3 text-pretty leading-relaxed text-muted">{p.problem}</p>
-          </Reveal>
-
           <div className="mt-10">
             <Reveal>
               <p className="eyebrow">How it works</p>
@@ -143,16 +138,16 @@ function CaseStudy({ p, flip, live }: { p: Featured; flip: boolean; live: Live }
 export default function Work({ stocks = null, news = null }: Partial<Live>) {
   return (
     <section id="work" className="relative py-28 sm:py-36">
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-[60vh] bg-[radial-gradient(50%_60%_at_50%_0%,rgba(139,123,255,0.12),transparent)]" />
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-[60vh] bg-[radial-gradient(50%_45%_at_50%_50%,rgba(139,123,255,0.1),transparent)]" />
       <div className="wrap relative">
         <SectionLabel index="02">Selected work</SectionLabel>
         <div className="mt-8 flex flex-col justify-between gap-6 md:flex-row md:items-end">
           <h2 className="text-[clamp(2.8rem,8vw,7rem)] font-medium leading-[0.92] tracking-[-0.05em]">
-            <SplitReveal text="Systems that" className="block" />
-            <SplitReveal text="think with data." className="serif block italic tracking-[-0.02em]" wordClassName="text-gradient pr-[0.05em]" delay={0.15} />
+            <SplitReveal text="Projects I'm" className="block" />
+            <SplitReveal text="proudest of." className="serif block italic tracking-[-0.02em]" wordClassName="text-gradient pr-[0.05em]" delay={0.15} />
           </h2>
           <Reveal className="max-w-sm text-muted">
-            <p>Two projects I&apos;m proudest of, each with a live, interactive look at how it works under the hood.</p>
+            <p>Both demos run on real data and refresh every few hours.</p>
           </Reveal>
         </div>
 

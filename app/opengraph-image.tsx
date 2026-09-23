@@ -23,12 +23,12 @@ export default function OG() {
       >
         <div style={{ display: "flex", alignItems: "center", gap: 14, fontSize: 24, color: "#c9c5bd" }}>
           <div style={{ width: 12, height: 12, borderRadius: 12, background: "#7ef0c8" }} />
-          Open to internships &amp; research
+          Open to internships
         </div>
         <div style={{ display: "flex", flexDirection: "column" }}>
           <div style={{ fontSize: 150, fontWeight: 700, letterSpacing: -7, lineHeight: 0.9 }}>Colten Hargett</div>
           <div style={{ fontSize: 40, marginTop: 28, color: "#d8d3ca" }}>
-            Computer Science &amp; Data Science · Machine Learning · AI Systems
+            Computer Science &amp; Data Science · Loyola Maryland
           </div>
         </div>
       </div>

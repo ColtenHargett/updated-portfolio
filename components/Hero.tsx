@@ -27,10 +27,10 @@ export default function Hero() {
           <span className="relative flex h-5 w-5 items-center justify-center rounded-full bg-emerald-400/15">
             <span className="h-1.5 w-1.5 animate-pulse-soft rounded-full bg-emerald-400" />
           </span>
-          Open to internships &amp; research opportunities
+          Open to internships
         </div>
 
-        <h1 className="sr-only">Colten Hargett, Computer Science and Data Science student building intelligent software</h1>
+        <h1 className="sr-only">Colten Hargett, computer science and data science student at Loyola University Maryland</h1>
         <div aria-hidden className="select-none">
           <SplitReveal
             immediate
@@ -50,8 +50,8 @@ export default function Hero() {
               style={{ animationDelay: "0.55s" }}
               className="intro-fade mb-[1.2vw] max-w-sm text-balance text-base leading-relaxed text-fg/75 sm:text-lg"
             >
-              I build <span className="serif text-[1.2em] italic text-fg">intelligent</span> software that turns messy, real-world data into
-              something <span className="serif text-[1.2em] italic text-fg">genuinely useful</span>.
+              CS and data science at Loyola Maryland. I build things that work with{" "}
+              <span className="serif text-[1.2em] italic text-fg">real data</span>.
             </p>
           </div>
         </div>
@@ -66,7 +66,7 @@ export default function Hero() {
               data-cursor="View"
               className="group inline-flex items-center gap-3 rounded-full bg-fg py-3 pl-6 pr-3 text-sm font-medium text-ink transition-shadow duration-500 hover:shadow-[0_0_60px_-10px_rgba(179,166,255,0.8)]"
             >
-              See selected work
+              See my work
               <span className="grid h-8 w-8 place-items-center rounded-full bg-ink text-fg transition-transform duration-500 group-hover:rotate-45">
                 <ArrowUpRight className="h-4 w-4" />
               </span>
