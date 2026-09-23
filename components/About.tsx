@@ -4,6 +4,7 @@ import { motion, useScroll, useTransform, type MotionValue } from "motion/react"
 import { useRef } from "react";
 import { principles, stats } from "@/lib/data";
 import { Counter, Reveal, SectionLabel, SplitReveal, trackGlow } from "./ui";
+import Bio from "./Bio";
 
 const statement =
   "I'm a Computer Science and Data Science student who loves building things that take messy, real-world data and turn it into something genuinely useful: forecasting models that explain themselves, AI agents that do the reading for you, and software that feels considered down to the details.";
@@ -43,7 +44,9 @@ export default function About() {
           ))}
         </p>
 
-        <div className="mt-20 grid grid-cols-2 gap-px overflow-hidden rounded-3xl border border-line bg-line md:grid-cols-4">
+        <Bio />
+
+        <div className="mt-24 grid grid-cols-2 gap-px overflow-hidden rounded-3xl border border-line bg-line md:grid-cols-4">
           {stats.map((s, i) => (
             <Reveal key={s.label} delay={i * 0.08} className="bg-ink p-6 sm:p-8">
               <p className="text-5xl font-medium tracking-[-0.04em] sm:text-6xl">

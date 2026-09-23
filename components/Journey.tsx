@@ -29,7 +29,7 @@ export default function Journey() {
             </h2>
             <Reveal delay={0.2}>
               <p className="mt-8 max-w-sm leading-relaxed text-muted">
-                Before I was writing models, I was running pool operations and leading teams of 30+. That experience taught me how to stay calm, take ownership and ship under pressure, and it shows up in how I work on software.
+                The classrooms, pool decks and volunteer events that shaped how I learn, lead and build. Leadership came first, and it still shapes how I work on every project.
               </p>
             </Reveal>
           </div>

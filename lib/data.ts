@@ -293,3 +293,30 @@ export const stats = [
   { value: 2, suffix: "", label: "Majors" },
   { value: 4.3, suffix: "", label: "HS weighted GPA", decimals: 1 },
 ];
+
+// ── Personal bio (About section) ─────────────────────────────────────────────
+// DRAFT: written from the résumé and projects. Lines marked "CHECK" are
+// inferred rather than taken from the résumé, so confirm or rewrite them.
+export const bio = {
+  // Drop a photo in /public (e.g. /public/colten.jpg) and set its path here.
+  // Leave as null to show the monogram card instead.
+  photo: null as string | null,
+  heading: "A bit more about me",
+  paragraphs: [
+    "I grew up in Glen Allen, Virginia, just outside Richmond, and I'm now in Baltimore studying Computer Science and Data Science at Loyola University Maryland, where I'm part of the Hyman Science Scholars Program.",
+    // CHECK: motivation is inferred from the projects
+    "I like the moment when a pile of raw data turns into something you can actually use. That's why I paired CS with data science, and it's what most of my projects chase: a forecasting model that can explain its own predictions, or an agent that reads the day's news so you don't have to.",
+    "Before I was writing models, I spent three summers managing a pool and leading a staff of 30+ lifeguards. It taught me to stay calm under pressure, own problems from start to finish, and make sure the people around me have what they need. I bring that same mindset to software.",
+    // CHECK: "keeping an eye on the markets" is inferred from the Finance & Investment Club and the stock project
+    "Off the clock, I've volunteered with James River Greyhounds since 2020, I co-founded my high school's Musical History Club, and I usually have one eye on the markets.",
+  ],
+  facts: [
+    { label: "Based in", value: "Baltimore, MD" },
+    { label: "From", value: "Glen Allen, VA" },
+    { label: "Studying", value: "B.S. CS + B.S. Data Science · '29" },
+    { label: "Interested in", value: "Machine learning, data tools, automation" },
+    { label: "Looking for", value: "Internships & research" },
+    // CHECK: swap in whatever you actually do for fun
+    { label: "Off the clock", value: "Greyhound rescue, music history, markets" },
+  ],
+};
