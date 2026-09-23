@@ -293,18 +293,17 @@ export const bio = {
   // Leave as null to show the monogram card instead.
   photo: null as string | null,
   paragraphs: [
-    "I grew up in Glen Allen, Virginia, just outside Richmond, and now I'm at Loyola University Maryland in Baltimore as part of the Hyman Science Scholars program.",
-    "Most of my projects start with a question I want answered. Can past market behavior predict tomorrow's high? Can a script read the news for me? I build the thing, test it honestly, and keep going until the results hold up.",
-    "Before any of that, I spent three summers managing a pool and a staff of 30+ lifeguards. It taught me to stay calm under pressure, communicate clearly and own a problem until it's solved, which matters just as much on a software team.",
-    // CHECK: add a hobby or two here if you want
-    "Outside of class, I've volunteered with James River Greyhounds since 2020, helping run fundraisers and adoption events.",
+    "I grew up in Glen Allen, Virginia, just outside Richmond, and now I'm at Loyola University Maryland studying computer science and data science as part of the Hyman Science Scholars program.",
+    "I like building things from scratch. Sometimes that's software, like the projects on this page, and sometimes it's a brand or a small business. The work I enjoy most is where a technical problem meets a creative one.",
+    "I spent three summers managing a pool and a staff of 30+ lifeguards, which taught me to stay calm under pressure and own a problem until it's solved. At Loyola, Alpha Kappa Psi has given me a community that pushes me to grow, both personally and professionally.",
+    "When I'm not in class or working on something new, I'm usually on a court playing pickleball or volleyball, or volunteering with James River Greyhounds, which I've done since 2020.",
   ],
   facts: [
     { label: "Based in", value: "Baltimore, MD" },
-    { label: "From", value: "Glen Allen, VA" },
     { label: "Studying", value: "B.S. CS + B.S. Data Science, '29" },
-    { label: "Into", value: "Machine learning, data tools, automation" },
+    { label: "Into", value: "Machine learning, automation, building products" },
     { label: "Looking for", value: "Software, data and ML internships" },
     { label: "Involved in", value: "Alpha Kappa Psi · ISSO" },
+    { label: "Off the clock", value: "Pickleball · volleyball" },
   ],
 };
