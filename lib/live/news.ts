@@ -157,13 +157,18 @@ export function parseBriefing(text: string): NonNullable<NewsData["briefing"]> |
     }
   }
   const complete = sections.filter((s) => s.body);
-  return complete.length ? { intro, sections: complete } : null;
+  if (complete.length) return { intro, sections: complete };
+  // Model ignored the section format: keep its paragraphs rather than dropping the briefing.
+  const paragraphs = lines.slice(1).filter((l) => l.length > 40);
+  return paragraphs.length ? { intro, sections: paragraphs.map((body) => ({ title: "", body })) } : null;
 }
 
 async function summarize(stories: NewsStory[], articles: Article[]) {
   const key = process.env.GEMINI_API_KEY;
   if (!key) return null;
-  const model = process.env.GEMINI_MODEL || "gemini-2.5-flash";
+  // Try the configured model first, then Google's rolling "latest Flash" alias,
+  // so a retired model name doesn't silently drop the briefing.
+  const models = [...new Set([process.env.GEMINI_MODEL || "gemini-2.5-flash", "gemini-flash-latest"])];
   const date = new Intl.DateTimeFormat("en-US", {
     weekday: "long",
     month: "long",
@@ -184,19 +189,38 @@ async function summarize(stories: NewsStory[], articles: Article[]) {
     )
     .join("\n\n---\n\n");
 
-  const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json", "x-goog-api-key": key },
-    body: JSON.stringify({
-      contents: [{ parts: [{ text: prompt(date, context) }] }],
-      generationConfig: { temperature: 0.4, maxOutputTokens: 1200 },
-    }),
-    signal: AbortSignal.timeout(25000),
-  });
-  if (!res.ok) throw new Error(`Gemini: HTTP ${res.status} ${(await res.text()).slice(0, 200)}`);
-  const json = await res.json();
-  const text: string = (json?.candidates?.[0]?.content?.parts ?? []).map((p: { text?: string }) => p.text ?? "").join("");
-  return parseBriefing(text);
+  const errors: string[] = [];
+  for (const model of models) {
+    try {
+      const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-goog-api-key": key },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt(date, context) }] }],
+          // Thinking models spend part of this budget reasoning before they answer,
+          // so leave plenty of room for the ~200-word briefing itself.
+          generationConfig: { temperature: 0.4, maxOutputTokens: 8192 },
+        }),
+        signal: AbortSignal.timeout(30000),
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status} ${(await res.text()).slice(0, 300)}`);
+      const json = await res.json();
+      const candidate = json?.candidates?.[0];
+      const text: string = (candidate?.content?.parts ?? [])
+        .filter((p: { thought?: boolean }) => !p.thought)
+        .map((p: { text?: string }) => p.text ?? "")
+        .join("");
+      const briefing = parseBriefing(text);
+      if (briefing) {
+        console.log(`[news] briefing from ${model}: ${briefing.sections.length} sections`);
+        return briefing;
+      }
+      throw new Error(`unusable response (finishReason ${candidate?.finishReason ?? "none"}, ${text.length} chars)`);
+    } catch (e) {
+      errors.push(`${model}: ${e instanceof Error ? e.message : String(e)}`);
+    }
+  }
+  throw new Error(`Gemini failed. ${errors.join(" | ")}`);
 }
 
 /** Pulls the live feeds and builds the briefing. Returns null if no feed could be read. */

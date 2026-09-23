@@ -71,14 +71,19 @@ function Inbox({ news, inView }: { news: NewsData; inView: boolean }) {
             <AnimatePresence initial={false}>
               {shown.map((s) => (
                 <motion.p
-                  key={s.title}
+                  key={s.title || s.body.slice(0, 40)}
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: "auto" }}
                   exit={{ opacity: 0, height: 0 }}
                   transition={{ duration: 0.4, ease: easeOutExpo }}
                   className="overflow-hidden text-[13px] leading-relaxed text-fg/80"
                 >
-                  <span className="font-medium text-fg">{s.title}</span> — {s.body}
+                  {s.title && (
+                    <>
+                      <span className="font-medium text-fg">{s.title}</span> —{" "}
+                    </>
+                  )}
+                  {s.body}
                 </motion.p>
               ))}
             </AnimatePresence>
