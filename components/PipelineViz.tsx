@@ -119,7 +119,7 @@ function Inbox({ news, inView }: { news: NewsData; inView: boolean }) {
 
 /** Phone layout: the same pipeline, stacked vertically in HTML so text stays full size. */
 function MobileFlow({ news, inView }: { news: NewsData | null; inView: boolean }) {
-  const steps = [...nodes.map((n) => ({ label: n.label, sub: n.sub, icon: n.icon })), { label: "Inbox", sub: "emailed nightly", icon: "M4 6h16v12H4zM4 6l8 7 8-7" }];
+  const steps = [...nodes.map((n) => ({ label: n.label, sub: n.sub, icon: n.icon })), { label: "Inbox", sub: "emailed each morning", icon: "M4 6h16v12H4zM4 6l8 7 8-7" }];
   return (
     <div className="px-5 pb-2 pt-4 sm:hidden" role="img" aria-label="Pipeline: five news sources feed a scraper, articles are stored in ChromaDB, Gemini writes the summary, and it is emailed out.">
       <div className="flex flex-wrap gap-2" aria-hidden>
@@ -194,7 +194,7 @@ export default function PipelineViz({ news = null }: { news?: NewsData | null })
       <div className="flex items-center justify-between px-5 pt-5 font-mono text-[11px] uppercase tracking-[0.14em] text-muted sm:px-7 sm:pt-6">
         <span className="flex items-center gap-2">
           <span className="h-1.5 w-1.5 animate-pulse-soft rounded-full bg-mint" />
-          {news?.briefing ? `Nightly run · ${eastern(news.briefing.generatedAt).time}` : news ? `Last run · ${eastern(news.generatedAt).time}` : "Nightly run · 10 PM ET"}
+          {news?.briefing ? `Morning run · ${eastern(news.briefing.generatedAt).time}` : news ? `Last run · ${eastern(news.generatedAt).time}` : "Morning run · 7 AM ET"}
         </span>
         <span className="hidden text-dim sm:inline">
           {news ? `${news.total} articles · ${news.stories.length} stories retrieved` : "scrape → store → summarize → send"}

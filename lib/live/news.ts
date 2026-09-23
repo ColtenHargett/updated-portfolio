@@ -281,14 +281,14 @@ async function summarize(stories: NewsStory[], articles: Article[]) {
 }
 
 /**
- * The briefing is a nightly edition, like the original project's email. An edition
- * starts at 9pm Eastern; a Vercel cron job (vercel.json) calls /api/cron/briefing
- * between 10 and 11pm to write it. The first successful summary of an edition is
- * cached and reused by every build and refresh until the next night, so the site makes
+ * The briefing is a morning edition, like the project's daily email. An edition
+ * starts at 6am Eastern; a Vercel cron job (vercel.json) calls /api/cron/briefing
+ * around 7am to write it. The first successful summary of an edition is
+ * cached and reused by every build and refresh until the next morning, so the site makes
  * about one Gemini call a day. Failures throw and aren't cached, so they get retried.
  * (unstable_cache is the documented cache for apps not using Cache Components.)
  */
-export const EDITION_START_HOUR_ET = 21;
+export const EDITION_START_HOUR_ET = 6;
 
 export function editionId(now = new Date()) {
   const parts = Object.fromEntries(
@@ -308,7 +308,7 @@ export function editionId(now = new Date()) {
   return day.toISOString().slice(0, 10);
 }
 
-async function nightlyBriefing(stories: NewsStory[], articles: Article[]) {
+async function morningBriefing(stories: NewsStory[], articles: Article[]) {
   if (!process.env.GEMINI_API_KEY) return null;
   return unstable_cache(() => summarize(stories, articles), ["news-briefing", editionId()], { revalidate: 172800 })();
 }
@@ -343,7 +343,7 @@ async function collectNews(): Promise<NewsData | null> {
   const stories = groupStories(articles);
   let briefing: NewsData["briefing"] = null;
   try {
-    briefing = await nightlyBriefing(stories, articles);
+    briefing = await morningBriefing(stories, articles);
   } catch (e) {
     console.error("[news] summary failed:", e);
   }

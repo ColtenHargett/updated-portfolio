@@ -19,7 +19,7 @@ The homepage is static, but Vercel regenerates it in the background every 6 hour
 
 - **Stock Market Predictor**: pulls 5 years of daily prices for AAPL, NVDA, AMD and GOOGL (Yahoo Finance, with Stooq as a fallback) and runs a TypeScript port of the project's model (`lib/live/model.ts`): the same 11 features, the same standardized 5-nearest-neighbor predictor, and the same walk-forward backtest against both baselines. The port was checked against the original Python and matches it to floating-point precision.
 - **News Summary Agent**: reads the same five RSS feeds over the last 24 hours, groups articles into stories by TF-IDF similarity, and has Gemini write the briefing with the project's prompt (`lib/live/news.ts`).
-  The briefing is a nightly edition: a Vercel cron job (`vercel.json`) calls `/api/cron/briefing` between about 9 and 11pm Eastern, and that night's briefing is cached and reused until the next one, so the site makes roughly one Gemini call a day on the free tier.
+  The briefing is a morning edition: a Vercel cron job (`vercel.json`) calls `/api/cron/briefing` between about 6 and 8am Eastern, and that morning's briefing is cached and reused until the next one, so the site makes roughly one Gemini call a day on the free tier.
 
 If a source is down during a refresh, the last good version of the page keeps being served. If data is unavailable at build time, the offline demos are shown instead.
 

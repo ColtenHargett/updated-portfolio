@@ -87,14 +87,14 @@ export const featured: Featured[] = [
     kicker: "AI Agents · Automation",
     // CHECK: the "five different sites" motivation is my guess
     summary:
-      "I wanted the day's news without opening five different sites, so I built a pipeline that does the reading for me. Every night it pulls the last 24 hours from NPR, BBC, ABC, CBS and NBC, stores the articles in a vector database, and has Gemini write a short, newspaper-style briefing that gets emailed out.",
+      "I wanted the day's news without opening five different sites, so I built a pipeline that does the reading for me. Every morning it pulls the last 24 hours from NPR, BBC, ABC, CBS and NBC, stores the articles in a vector database, and has Gemini write a short, newspaper-style briefing that gets emailed out.",
     takeaway:
       "Keeping an LLM accurate came down to what it's allowed to see. It only gets the articles the pipeline retrieved, and the prompt tells it not to add anything else.",
     approach: [
       "Scrapes all five RSS feeds and pulls the full text of every article from the last 24 hours",
       "Splits the articles into chunks with LangChain and stores them in ChromaDB",
       "Gemini writes the briefing using only that retrieved context",
-      "A scheduler runs the whole thing nightly and emails the result",
+      "A scheduler runs the whole thing every morning and emails the result",
     ],
     stats: [
       { value: "5", label: "News sources" },
@@ -125,7 +125,7 @@ export const archive: ArchiveItem[] = [
   },
   {
     title: "News Summary Agent",
-    description: "Reads the news and emails a nightly AI summary.",
+    description: "Reads the news and emails an AI summary every morning.",
     category: "AI / ML",
     tags: ["Gemini", "ChromaDB"],
     path: "AI and Machine Learning/News Summary Agent/",
