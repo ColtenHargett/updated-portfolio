@@ -63,7 +63,7 @@ export default function Nav() {
             scrolled ? "glass shadow-[0_10px_40px_-10px_rgba(0,0,0,0.6)]" : "border border-transparent"
           }`}
         >
-          <a href="#top" className="group flex items-center gap-2.5">
+          <a href="#top" className="group flex min-h-11 min-w-11 items-center gap-2.5">
             <span aria-hidden className="relative grid h-7 w-7 place-items-center rounded-full bg-fg text-[11px] font-semibold tracking-tight text-ink transition-transform duration-500 group-hover:rotate-[360deg]">
               CH
             </span>
@@ -108,7 +108,7 @@ export default function Nav() {
               aria-expanded={open}
               aria-controls="mobile-menu"
               aria-label={open ? "Close menu" : "Open menu"}
-              className="glass grid h-10 w-10 place-items-center rounded-full md:hidden"
+              className="glass grid h-11 w-11 place-items-center rounded-full md:hidden"
             >
               <span className="relative block h-3 w-4">
                 <span className={`absolute left-0 h-px w-4 bg-fg transition-all duration-500 ${open ? "top-1.5 rotate-45" : "top-0.5"}`} />

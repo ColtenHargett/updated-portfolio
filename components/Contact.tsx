@@ -123,7 +123,7 @@ export default function Contact() {
             <span className="h-1.5 w-1.5 animate-pulse-soft rounded-full bg-emerald-400" />
             {site.location} · <Clock />
           </span>
-          <a href="#top" className="group flex items-center gap-2 transition-colors hover:text-fg">
+          <a href="#top" className="group flex min-h-11 items-center gap-2 transition-colors hover:text-fg sm:min-h-0">
             Back to top
             <span className="inline-block transition-transform duration-500 group-hover:-translate-y-1">↑</span>
           </a>

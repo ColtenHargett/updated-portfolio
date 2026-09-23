@@ -5,9 +5,10 @@ import { useMemo, useRef, useState, type PointerEvent } from "react";
 import type { StockData, TickerResult } from "@/lib/live/types";
 import { easeOutExpo } from "./ui";
 
-const VW = 800;
-const VH = 340;
-const PAD = { l: 14, r: 120, t: 64, b: 40 };
+// Two geometries: phones get a narrower canvas so labels stay ~11px instead of shrinking to 5px.
+type Geo = { id: string; VW: number; VH: number; PAD: { l: number; r: number; t: number; b: number }; fx: number };
+const WIDE: Geo = { id: "w", VW: 800, VH: 340, PAD: { l: 14, r: 120, t: 64, b: 40 }, fx: 34 };
+const NARROW: Geo = { id: "n", VW: 380, VH: 290, PAD: { l: 8, r: 92, t: 50, b: 34 }, fx: 22 };
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
 // Dates arrive as YYYY-MM-DD; format by hand so server and client render identically.
@@ -18,7 +19,8 @@ const fmtDate = (d: string, withYear = true) => {
 const usd = (v: number) => `$${v.toFixed(2)}`;
 const pct = (v: number, digits = 2) => `${v >= 0 ? "+" : ""}${(v * 100).toFixed(digits)}%`;
 
-function PriceChart({ t, inView, fast }: { t: TickerResult; inView: boolean; fast: boolean }) {
+function PriceChart({ t, inView, fast, geo }: { t: TickerResult; inView: boolean; fast: boolean; geo: Geo }) {
+  const { VW, VH, PAD } = geo;
   // The first reveal is choreographed; switching tickers afterwards should feel instant.
   const d = fast ? 0.25 : 1;
   const [hover, setHover] = useState<number | null>(null);
@@ -37,10 +39,13 @@ function PriceChart({ t, inView, fast }: { t: TickerResult; inView: boolean; fas
     while (lo < n - 1 && dates[lo + 1] <= d) lo++;
     return lo;
   };
-  const years = dates.flatMap((d, i) => (i > 0 && d.slice(0, 4) !== dates[i - 1].slice(0, 4) ? [{ i, y: d.slice(0, 4) }] : []));
   const lx = x(n - 1);
+  // Year ticks, skipping any that would collide with the "today" label.
+  const years = dates.flatMap((d, i) =>
+    i > 0 && d.slice(0, 4) !== dates[i - 1].slice(0, 4) && lx - x(i) > 44 ? [{ i, y: d.slice(0, 4) }] : [],
+  );
   const ly = y(t.lastClose);
-  const px = lx + 34;
+  const px = lx + geo.fx;
   const py = y(t.forecast.high);
 
   const onMove = (e: PointerEvent<SVGSVGElement>) => {
@@ -57,14 +62,15 @@ function PriceChart({ t, inView, fast }: { t: TickerResult; inView: boolean; fas
       role="img"
       aria-label={`${t.ticker} daily closes over the last five years. The model's five most similar historical days are marked, and it forecasts a next-session high of ${usd(t.forecast.high)}.`}
       onPointerMove={onMove}
+      onPointerDown={onMove}
       onPointerLeave={() => setHover(null)}
     >
       <defs>
-        <linearGradient id="ls-area" x1="0" x2="0" y1="0" y2="1">
+        <linearGradient id={`ls-area-${geo.id}`} x1="0" x2="0" y1="0" y2="1">
           <stop offset="0%" stopColor="#8b7bff" stopOpacity="0.3" />
           <stop offset="100%" stopColor="#8b7bff" stopOpacity="0" />
         </linearGradient>
-        <linearGradient id="ls-line" x1="0" x2="1">
+        <linearGradient id={`ls-line-${geo.id}`} x1="0" x2="1">
           <stop offset="0%" stopColor="#8b7bff" />
           <stop offset="80%" stopColor="#b3a6ff" />
           <stop offset="100%" stopColor="#ffb38a" />
@@ -80,11 +86,11 @@ function PriceChart({ t, inView, fast }: { t: TickerResult; inView: boolean; fas
         </g>
       ))}
 
-      <motion.path d={area} fill="url(#ls-area)" initial={{ opacity: 0 }} animate={{ opacity: inView ? 1 : 0 }} transition={{ duration: 1 * d, delay: 0.3 * d }} />
+      <motion.path d={area} fill={`url(#ls-area-${geo.id})`} initial={{ opacity: 0 }} animate={{ opacity: inView ? 1 : 0 }} transition={{ duration: 1 * d, delay: 0.3 * d }} />
       <motion.path
         d={line}
         fill="none"
-        stroke="url(#ls-line)"
+        stroke={`url(#ls-line-${geo.id})`}
         strokeWidth="1.6"
         strokeLinejoin="round"
         initial={{ pathLength: 0 }}
@@ -269,7 +275,7 @@ export default function LiveStockViz({ data }: { data: StockData }) {
                 setActive(x.ticker);
                 setSwitched(true);
               }}
-              className={`relative rounded-full px-3 py-1.5 font-mono text-[11px] tracking-[0.08em] transition-colors ${
+              className={`relative min-h-10 rounded-full px-3.5 font-mono text-[11px] tracking-[0.08em] transition-colors sm:min-h-0 sm:px-3 sm:py-1.5 ${
                 x.ticker === active ? "text-ink" : "text-muted hover:text-fg"
               }`}
             >
@@ -288,7 +294,12 @@ export default function LiveStockViz({ data }: { data: StockData }) {
 
       <AnimatePresence mode="wait">
         <motion.div key={t.ticker} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.25 }}>
-          <PriceChart t={t} inView={inView} fast={switched} />
+          <div className="hidden sm:block">
+            <PriceChart t={t} inView={inView} fast={switched} geo={WIDE} />
+          </div>
+          <div className="sm:hidden">
+            <PriceChart t={t} inView={inView} fast={switched} geo={NARROW} />
+          </div>
 
           <div className="grid gap-px border-t border-line bg-line sm:grid-cols-2">
             <div className="bg-ink-2 px-5 py-5 sm:px-7">

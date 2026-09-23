@@ -88,7 +88,7 @@ function Inbox({ news, inView }: { news: NewsData; inView: boolean }) {
               type="button"
               onClick={() => setOpen((o) => !o)}
               aria-expanded={open}
-              className="mt-3 font-mono text-[10px] uppercase tracking-[0.14em] text-iris transition-colors hover:text-fg"
+              className="mt-1 inline-flex min-h-11 items-center font-mono text-[10px] uppercase tracking-[0.14em] text-iris transition-colors hover:text-fg"
             >
               {open ? "Show less ↑" : `Read full briefing (${b.sections.length} sections) ↓`}
             </button>
@@ -98,17 +98,73 @@ function Inbox({ news, inView }: { news: NewsData; inView: boolean }) {
         <p className="mt-2 text-sm font-medium">Most-covered stories, last 24 hours</p>
       )}
 
-      <ul className={`${b ? "mt-4 border-t border-line pt-3" : "mt-3"} space-y-2`}>
+      <ul className={`${b ? "mt-3 border-t border-line pt-2" : "mt-2"}`}>
         {news.stories.slice(0, b ? 3 : 5).map((st) => (
           <li key={st.title} className="text-[12px] leading-snug">
-            <a href={st.sources[0].link} target="_blank" rel="noopener noreferrer nofollow" className="text-fg/80 transition-colors hover:text-fg">
+            <a href={st.sources[0].link} target="_blank" rel="noopener noreferrer nofollow" className="block py-2 text-fg/80 transition-colors hover:text-fg">
               {st.title}
+              <span className="ml-1.5 font-mono text-[10px] uppercase tracking-[0.08em] text-dim">{st.sources.map((x) => x.name.replace(" News", "")).join(" · ")}</span>
             </a>
-            <span className="ml-1.5 font-mono text-[10px] uppercase tracking-[0.08em] text-dim">{st.sources.map((x) => x.name.replace(" News", "")).join(" · ")}</span>
           </li>
         ))}
       </ul>
     </motion.div>
+  );
+}
+
+/** Phone layout: the same pipeline, stacked vertically in HTML so text stays full size. */
+function MobileFlow({ news, inView }: { news: NewsData | null; inView: boolean }) {
+  const steps = [...nodes.map((n) => ({ label: n.label, sub: n.sub, icon: n.icon })), { label: "Inbox", sub: "emailed nightly", icon: "M4 6h16v12H4zM4 6l8 7 8-7" }];
+  return (
+    <div className="px-5 pb-2 pt-4 sm:hidden" role="img" aria-label="Pipeline: five news sources feed a scraper, articles are stored in ChromaDB, Gemini writes the summary, and it is emailed out.">
+      <div className="flex flex-wrap gap-2" aria-hidden>
+        {sources.map((s, i) => (
+          <motion.span
+            key={s}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: inView ? 1 : 0, y: 0 }}
+            transition={{ duration: 0.6, delay: i * 0.06, ease: easeOutExpo }}
+            className="flex items-center gap-2 rounded-full border border-line-strong bg-white/[0.03] px-3 py-1.5 text-[13px]"
+          >
+            <span className="h-1.5 w-1.5 rounded-full bg-mint" />
+            {s}
+            {news && <span className="font-mono text-[11px] text-muted">{news.counts.find((c) => c.name === s)?.count ?? 0}</span>}
+          </motion.span>
+        ))}
+      </div>
+
+      <ol className="mt-1" aria-hidden>
+        {steps.map((st, i) => (
+          <li key={st.label}>
+            <div className="relative ml-[27px] h-7 w-px bg-gradient-to-b from-iris/20 to-peach/50">
+              <span className="flow-dot absolute -left-[3px] top-0 h-[7px] w-[7px] rounded-full bg-iris" style={{ animationDelay: `${i * 0.35}s` }} />
+            </div>
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: inView ? 1 : 0, y: 0 }}
+              transition={{ duration: 0.7, delay: 0.3 + i * 0.12, ease: easeOutExpo }}
+              className="flex items-center gap-3 rounded-2xl border border-line-strong bg-[#0f0f16] p-3"
+            >
+              <span className={`grid h-9 w-9 shrink-0 place-items-center rounded-xl ${i === steps.length - 1 ? "bg-peach text-ink" : "bg-iris/15 text-iris"}`}>
+                <svg viewBox="0 0 24 24" className="h-[18px] w-[18px]" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d={st.icon} />
+                </svg>
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="block text-[15px] font-medium">{st.label}</span>
+                <span className="block font-mono text-[11px] text-muted">{st.sub}</span>
+              </span>
+              <span className="font-mono text-[11px] text-dim">0{i + 1}</span>
+            </motion.div>
+          </li>
+        ))}
+      </ol>
+      {news && (
+        <p className="mt-4 font-mono text-[11px] uppercase tracking-[0.12em] text-muted">
+          {news.total} articles · {news.stories.length} stories retrieved
+        </p>
+      )}
+    </div>
   );
 }
 
@@ -140,7 +196,7 @@ export default function PipelineViz({ news = null }: { news?: NewsData | null })
         </span>
       </div>
 
-      <svg viewBox={`0 0 ${VW} ${VH}`} className="block h-auto w-full" role="img" aria-label="Pipeline diagram: five news sources feed a scraper, which stores chunks in ChromaDB; Gemini writes a summary that is emailed out.">
+      <svg viewBox={`0 0 ${VW} ${VH}`} className="hidden h-auto w-full sm:block" role="img" aria-label="Pipeline diagram: five news sources feed a scraper, which stores chunks in ChromaDB; Gemini writes a summary that is emailed out.">
         <defs>
           <linearGradient id="pv-link" x1="0" x2="1">
             <stop offset="0%" stopColor="#8b7bff" stopOpacity="0.2" />
@@ -218,6 +274,8 @@ export default function PipelineViz({ news = null }: { news?: NewsData | null })
           <text x={inbox.x} y={inbox.y + 50} textAnchor="middle" className="fill-dim font-mono text-[10px]">04</text>
         </motion.g>
       </svg>
+
+      <MobileFlow news={news} inView={inView} />
 
       {news ? (
         <Inbox news={news} inView={inView} />

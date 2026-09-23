@@ -11,9 +11,10 @@ import { easeOutExpo } from "./ui";
 const N = 132; // trading days
 const W = 8; // window length compared
 const K = 3; // neighbors
-const VW = 800;
-const VH = 400;
-const PAD = { l: 16, r: 110, t: 70, b: 44 };
+// Phones get a narrower canvas so SVG labels stay legible instead of scaling down to ~5px.
+type Geo = { id: string; VW: number; VH: number; PAD: { l: number; r: number; t: number; b: number } };
+const WIDE: Geo = { id: "w", VW: 800, VH: 400, PAD: { l: 16, r: 110, t: 70, b: 44 } };
+const NARROW: Geo = { id: "n", VW: 380, VH: 300, PAD: { l: 8, r: 80, t: 56, b: 36 } };
 
 function mulberry32(seed: number) {
   return () => {
@@ -85,21 +86,131 @@ export default function StockViz() {
   const all = [...sim.close, ...sim.high, sim.predHigh];
   const min = Math.min(...all);
   const max = Math.max(...all);
-  const x = (i: number) => PAD.l + (i / N) * (VW - PAD.l - PAD.r);
-  const y = (v: number) => PAD.t + (1 - (v - min) / (max - min)) * (VH - PAD.t - PAD.b);
+  const chart = (g: Geo) => {
+    const { VW, VH, PAD } = g;
+    const x = (i: number) => PAD.l + (i / N) * (VW - PAD.l - PAD.r);
+    const y = (v: number) => PAD.t + (1 - (v - min) / (max - min)) * (VH - PAD.t - PAD.b);
 
-  const line = sim.close.map((c, i) => `${i ? "L" : "M"}${x(i).toFixed(1)},${y(c).toFixed(1)}`).join("");
-  const area = `${line}L${x(N - 1)},${VH - PAD.b}L${x(0)},${VH - PAD.b}Z`;
-  const qx0 = x(sim.qStart);
-  const qx1 = x(N - 1);
-  const px = x(N + 3);
-  const py = y(sim.predHigh);
+    const line = sim.close.map((c, i) => `${i ? "L" : "M"}${x(i).toFixed(1)},${y(c).toFixed(1)}`).join("");
+    const area = `${line}L${x(N - 1)},${VH - PAD.b}L${x(0)},${VH - PAD.b}Z`;
+    const qx0 = x(sim.qStart);
+    const qx1 = x(N - 1);
+    const px = x(N + 3);
+    const py = y(sim.predHigh);
 
-  const onMove = (e: PointerEvent<SVGSVGElement>) => {
-    const r = e.currentTarget.getBoundingClientRect();
-    const vx = ((e.clientX - r.left) / r.width) * VW;
-    const i = Math.round(((vx - PAD.l) / (VW - PAD.l - PAD.r)) * N);
-    setHover(i >= 0 && i < N ? i : null);
+    const onMove = (e: PointerEvent<SVGSVGElement>) => {
+      const r = e.currentTarget.getBoundingClientRect();
+      const vx = ((e.clientX - r.left) / r.width) * VW;
+      const i = Math.round(((vx - PAD.l) / (VW - PAD.l - PAD.r)) * N);
+      setHover(i >= 0 && i < N ? i : null);
+    };
+
+    return (
+          <svg
+            viewBox={`0 0 ${VW} ${VH}`}
+            className="block h-auto w-full touch-pan-y"
+            role="img"
+            aria-label={`Simulated price chart. The model found ${K} historical windows similar to the most recent ${W} days and predicts a next-day high of ${sim.predHigh.toFixed(2)}, ${(sim.predPct * 100).toFixed(2)}% above the last close.`}
+            onPointerMove={onMove}
+            onPointerDown={onMove}
+            onPointerLeave={() => setHover(null)}
+          >
+            <defs>
+              <linearGradient id={`sv-area-${g.id}`} x1="0" x2="0" y1="0" y2="1">
+                <stop offset="0%" stopColor="#8b7bff" stopOpacity="0.35" />
+                <stop offset="100%" stopColor="#8b7bff" stopOpacity="0" />
+              </linearGradient>
+              <linearGradient id={`sv-line-${g.id}`} x1="0" x2="1">
+                <stop offset="0%" stopColor="#8b7bff" />
+                <stop offset="75%" stopColor="#b3a6ff" />
+                <stop offset="100%" stopColor="#ffb38a" />
+              </linearGradient>
+            </defs>
+
+            {[0.25, 0.5, 0.75].map((f) => (
+              <line key={f} x1={PAD.l} x2={VW - PAD.r + 60} y1={PAD.t + f * (VH - PAD.t - PAD.b)} y2={PAD.t + f * (VH - PAD.t - PAD.b)} stroke="rgba(255,255,255,0.05)" strokeDasharray="2 6" />
+            ))}
+
+            <AnimatePresence mode="wait">
+              <motion.g key={seed} initial={{ opacity: 0 }} animate={{ opacity: inView ? 1 : 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.4 }}>
+                {/* matched historical windows + arcs linking them to today */}
+                {sim.matches.map((m, i) => {
+                  const x0 = x(m.start);
+                  const x1 = x(m.start + W);
+                  const mid = (x0 + x1) / 2;
+                  const qmid = (qx0 + qx1) / 2;
+                  const h = Math.min(18 + (qmid - mid) * 0.12, PAD.t - 22);
+                  return (
+                    <motion.g key={m.start} initial={{ opacity: 0 }} animate={{ opacity: inView ? 1 : 0 }} transition={{ delay: 1.2 + i * 0.25, duration: 0.8 }}>
+                      <rect x={x0} y={PAD.t - 8} width={x1 - x0} height={VH - PAD.t - PAD.b + 8} fill="rgba(179,166,255,0.08)" stroke="rgba(179,166,255,0.35)" strokeDasharray="3 4" rx="6" />
+                      <motion.path
+                        d={`M${mid},${PAD.t - 8} C${mid},${PAD.t - 8 - h} ${qmid},${PAD.t - 8 - h} ${qmid},${PAD.t - 8}`}
+                        fill="none"
+                        stroke="rgba(179,166,255,0.45)"
+                        strokeWidth="1"
+                        initial={{ pathLength: 0 }}
+                        animate={{ pathLength: inView ? 1 : 0 }}
+                        transition={{ delay: 1.4 + i * 0.25, duration: 1.1, ease: easeOutExpo }}
+                      />
+                      <text x={mid} y={VH - PAD.b + 22} textAnchor="middle" className="fill-iris font-mono text-[11px] max-sm:hidden">
+                        k{i + 1} · d={m.d.toFixed(2)}
+                      </text>
+                    </motion.g>
+                  );
+                })}
+
+                {/* today's window */}
+                <motion.g initial={{ opacity: 0 }} animate={{ opacity: inView ? 1 : 0 }} transition={{ delay: 1, duration: 0.8 }}>
+                  <rect x={qx0} y={PAD.t - 8} width={qx1 - qx0} height={VH - PAD.t - PAD.b + 8} fill="rgba(255,179,138,0.08)" stroke="rgba(255,179,138,0.5)" rx="6" />
+                  <text x={(qx0 + qx1) / 2} y={VH - PAD.b + 22} textAnchor="middle" className="fill-peach font-mono text-[11px]">
+                    today
+                  </text>
+                </motion.g>
+
+                <motion.path d={area} fill={`url(#sv-area-${g.id})`} initial={{ opacity: 0 }} animate={{ opacity: inView ? 1 : 0 }} transition={{ duration: 1.2, delay: 0.4 }} />
+                <motion.path
+                  d={line}
+                  fill="none"
+                  stroke={`url(#sv-line-${g.id})`}
+                  strokeWidth="2"
+                  strokeLinejoin="round"
+                  initial={{ pathLength: 0 }}
+                  animate={{ pathLength: inView ? 1 : 0 }}
+                  transition={{ duration: 1.8, ease: easeOutExpo }}
+                />
+
+                {/* forecast */}
+                <motion.g initial={{ opacity: 0, x: -10 }} animate={{ opacity: inView ? 1 : 0, x: 0 }} transition={{ delay: 2.1, duration: 0.9, ease: easeOutExpo }}>
+                  <line x1={x(N - 1)} y1={y(sim.last)} x2={px} y2={py} stroke="#ffb38a" strokeWidth="1.5" strokeDasharray="4 4" />
+                  <circle cx={px} cy={py} r="14" fill="rgba(255,179,138,0.15)">
+                    <animate attributeName="r" values="8;18;8" dur="2.4s" repeatCount="indefinite" />
+                    <animate attributeName="opacity" values="1;0.2;1" dur="2.4s" repeatCount="indefinite" />
+                  </circle>
+                  <circle cx={px} cy={py} r="4.5" fill="#ffb38a" />
+                  <text x={px + 12} y={py - 12} className="fill-fg text-[13px] font-medium">
+                    ${sim.predHigh.toFixed(2)}
+                  </text>
+                  <text x={px + 12} y={py + 6} className="fill-peach font-mono text-[11px]">
+                    {sim.predPct >= 0 ? "+" : ""}
+                    {(sim.predPct * 100).toFixed(2)}% high
+                  </text>
+                </motion.g>
+              </motion.g>
+            </AnimatePresence>
+
+            {hover !== null && (
+              <g pointerEvents="none">
+                <line x1={x(hover)} x2={x(hover)} y1={PAD.t - 8} y2={VH - PAD.b} stroke="rgba(255,255,255,0.25)" />
+                <circle cx={x(hover)} cy={y(sim.close[hover])} r="4" fill="#f2efe9" />
+                <g transform={`translate(${Math.min(x(hover) + 10, VW - 120)}, ${PAD.t + 4})`}>
+                  <rect width="100" height="40" rx="8" fill="rgba(12,12,17,0.92)" stroke="rgba(255,255,255,0.12)" />
+                  <text x="10" y="16" className="fill-muted font-mono text-[10px]">DAY {hover + 1}</text>
+                  <text x="10" y="32" className="fill-fg text-[12px] font-medium">${sim.close[hover].toFixed(2)}</text>
+                </g>
+              </g>
+            )}
+          </svg>
+    );
   };
 
   return (
@@ -112,7 +223,7 @@ export default function StockViz() {
         <button
           type="button"
           onClick={() => setSeed((s) => s + 1)}
-          className="group flex items-center gap-2 rounded-full border border-line-strong px-3.5 py-1.5 font-mono text-[11px] uppercase tracking-[0.14em] text-fg/80 transition-colors hover:border-iris hover:text-fg"
+          className="group flex min-h-10 items-center gap-2 rounded-full border border-line-strong px-3.5 py-1.5 font-mono sm:min-h-0 text-[11px] uppercase tracking-[0.14em] text-fg/80 transition-colors hover:border-iris hover:text-fg"
         >
           <svg viewBox="0 0 24 24" className="h-3.5 w-3.5 transition-transform duration-700 group-hover:rotate-180" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
             <path d="M21 12a9 9 0 1 1-3-6.7L21 8M21 3v5h-5" strokeLinecap="round" strokeLinejoin="round" />
@@ -121,109 +232,8 @@ export default function StockViz() {
         </button>
       </div>
 
-      <svg
-        viewBox={`0 0 ${VW} ${VH}`}
-        className="block h-auto w-full touch-pan-y"
-        role="img"
-        aria-label={`Simulated price chart. The model found ${K} historical windows similar to the most recent ${W} days and predicts a next-day high of ${sim.predHigh.toFixed(2)}, ${(sim.predPct * 100).toFixed(2)}% above the last close.`}
-        onPointerMove={onMove}
-        onPointerLeave={() => setHover(null)}
-      >
-        <defs>
-          <linearGradient id="sv-area" x1="0" x2="0" y1="0" y2="1">
-            <stop offset="0%" stopColor="#8b7bff" stopOpacity="0.35" />
-            <stop offset="100%" stopColor="#8b7bff" stopOpacity="0" />
-          </linearGradient>
-          <linearGradient id="sv-line" x1="0" x2="1">
-            <stop offset="0%" stopColor="#8b7bff" />
-            <stop offset="75%" stopColor="#b3a6ff" />
-            <stop offset="100%" stopColor="#ffb38a" />
-          </linearGradient>
-        </defs>
-
-        {[0.25, 0.5, 0.75].map((f) => (
-          <line key={f} x1={PAD.l} x2={VW - PAD.r + 60} y1={PAD.t + f * (VH - PAD.t - PAD.b)} y2={PAD.t + f * (VH - PAD.t - PAD.b)} stroke="rgba(255,255,255,0.05)" strokeDasharray="2 6" />
-        ))}
-
-        <AnimatePresence mode="wait">
-          <motion.g key={seed} initial={{ opacity: 0 }} animate={{ opacity: inView ? 1 : 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.4 }}>
-            {/* matched historical windows + arcs linking them to today */}
-            {sim.matches.map((m, i) => {
-              const x0 = x(m.start);
-              const x1 = x(m.start + W);
-              const mid = (x0 + x1) / 2;
-              const qmid = (qx0 + qx1) / 2;
-              const h = Math.min(18 + (qmid - mid) * 0.12, PAD.t - 22);
-              return (
-                <motion.g key={m.start} initial={{ opacity: 0 }} animate={{ opacity: inView ? 1 : 0 }} transition={{ delay: 1.2 + i * 0.25, duration: 0.8 }}>
-                  <rect x={x0} y={PAD.t - 8} width={x1 - x0} height={VH - PAD.t - PAD.b + 8} fill="rgba(179,166,255,0.08)" stroke="rgba(179,166,255,0.35)" strokeDasharray="3 4" rx="6" />
-                  <motion.path
-                    d={`M${mid},${PAD.t - 8} C${mid},${PAD.t - 8 - h} ${qmid},${PAD.t - 8 - h} ${qmid},${PAD.t - 8}`}
-                    fill="none"
-                    stroke="rgba(179,166,255,0.45)"
-                    strokeWidth="1"
-                    initial={{ pathLength: 0 }}
-                    animate={{ pathLength: inView ? 1 : 0 }}
-                    transition={{ delay: 1.4 + i * 0.25, duration: 1.1, ease: easeOutExpo }}
-                  />
-                  <text x={mid} y={VH - PAD.b + 22} textAnchor="middle" className="fill-iris font-mono text-[11px] max-sm:hidden">
-                    k{i + 1} · d={m.d.toFixed(2)}
-                  </text>
-                </motion.g>
-              );
-            })}
-
-            {/* today's window */}
-            <motion.g initial={{ opacity: 0 }} animate={{ opacity: inView ? 1 : 0 }} transition={{ delay: 1, duration: 0.8 }}>
-              <rect x={qx0} y={PAD.t - 8} width={qx1 - qx0} height={VH - PAD.t - PAD.b + 8} fill="rgba(255,179,138,0.08)" stroke="rgba(255,179,138,0.5)" rx="6" />
-              <text x={(qx0 + qx1) / 2} y={VH - PAD.b + 22} textAnchor="middle" className="fill-peach font-mono text-[11px]">
-                today
-              </text>
-            </motion.g>
-
-            <motion.path d={area} fill="url(#sv-area)" initial={{ opacity: 0 }} animate={{ opacity: inView ? 1 : 0 }} transition={{ duration: 1.2, delay: 0.4 }} />
-            <motion.path
-              d={line}
-              fill="none"
-              stroke="url(#sv-line)"
-              strokeWidth="2"
-              strokeLinejoin="round"
-              initial={{ pathLength: 0 }}
-              animate={{ pathLength: inView ? 1 : 0 }}
-              transition={{ duration: 1.8, ease: easeOutExpo }}
-            />
-
-            {/* forecast */}
-            <motion.g initial={{ opacity: 0, x: -10 }} animate={{ opacity: inView ? 1 : 0, x: 0 }} transition={{ delay: 2.1, duration: 0.9, ease: easeOutExpo }}>
-              <line x1={x(N - 1)} y1={y(sim.last)} x2={px} y2={py} stroke="#ffb38a" strokeWidth="1.5" strokeDasharray="4 4" />
-              <circle cx={px} cy={py} r="14" fill="rgba(255,179,138,0.15)">
-                <animate attributeName="r" values="8;18;8" dur="2.4s" repeatCount="indefinite" />
-                <animate attributeName="opacity" values="1;0.2;1" dur="2.4s" repeatCount="indefinite" />
-              </circle>
-              <circle cx={px} cy={py} r="4.5" fill="#ffb38a" />
-              <text x={px + 12} y={py - 12} className="fill-fg text-[13px] font-medium">
-                ${sim.predHigh.toFixed(2)}
-              </text>
-              <text x={px + 12} y={py + 6} className="fill-peach font-mono text-[11px]">
-                {sim.predPct >= 0 ? "+" : ""}
-                {(sim.predPct * 100).toFixed(2)}% high
-              </text>
-            </motion.g>
-          </motion.g>
-        </AnimatePresence>
-
-        {hover !== null && (
-          <g pointerEvents="none">
-            <line x1={x(hover)} x2={x(hover)} y1={PAD.t - 8} y2={VH - PAD.b} stroke="rgba(255,255,255,0.25)" />
-            <circle cx={x(hover)} cy={y(sim.close[hover])} r="4" fill="#f2efe9" />
-            <g transform={`translate(${Math.min(x(hover) + 10, VW - 120)}, ${PAD.t + 4})`}>
-              <rect width="100" height="40" rx="8" fill="rgba(12,12,17,0.92)" stroke="rgba(255,255,255,0.12)" />
-              <text x="10" y="16" className="fill-muted font-mono text-[10px]">DAY {hover + 1}</text>
-              <text x="10" y="32" className="fill-fg text-[12px] font-medium">${sim.close[hover].toFixed(2)}</text>
-            </g>
-          </g>
-        )}
-      </svg>
+      <div className="hidden sm:block">{chart(WIDE)}</div>
+      <div className="sm:hidden">{chart(NARROW)}</div>
 
       <PatternPanel sim={sim} seed={seed} />
 

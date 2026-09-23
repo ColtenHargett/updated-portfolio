@@ -100,7 +100,7 @@ export default function Hero() {
             <p className="text-dim">Local time</p>
             <Clock className="mt-1.5 block text-fg/85" />
           </div>
-          <a href="#about" className="group flex items-center gap-3 sm:justify-self-end">
+          <a href="#about" className="group flex min-h-11 items-center gap-3 sm:justify-self-end">
             <span className="relative h-10 w-6 rounded-full border border-line-strong">
               <motion.span
                 className="absolute left-1/2 top-2 h-1.5 w-1 -translate-x-1/2 rounded-full bg-fg"
