@@ -246,7 +246,7 @@ async function summarize(stories: NewsStory[], articles: Article[]) {
     if (!model && !discovered) {
       discovered = true;
       try {
-        queue.push(...(await discoverFlashModels(key)).slice(0, 3));
+        queue.push(...(await discoverFlashModels(key)).slice(0, 2));
       } catch (e) {
         errors.push(e instanceof Error ? e.message : String(e));
       }
@@ -255,7 +255,7 @@ async function summarize(stories: NewsStory[], articles: Article[]) {
     if (!model) break;
     tried.add(model);
 
-    for (let attempt = 0; attempt < 3 && Date.now() < deadline; attempt++) {
+    for (let attempt = 0; attempt < 2 && Date.now() < deadline; attempt++) {
       try {
         const r = await generate(model, key, text, deadline);
         if (r.ok) {
@@ -264,17 +264,31 @@ async function summarize(stories: NewsStory[], articles: Article[]) {
         }
         errors.push(`${model}: ${r.error}`);
         if (r.status !== 429 && r.status < 500) break; // 404 etc: move on to the next model
+        // Free-tier rate limits (429) need a longer pause than a brief overload (503).
+        if (attempt === 0) await sleep(r.status === 429 ? 6000 : 2000);
       } catch (e) {
         errors.push(`${model}: ${e instanceof Error ? e.message : String(e)}`);
+        if (attempt === 0) await sleep(2000);
       }
-      await sleep([1500, 4000][attempt] ?? 0);
     }
   }
   throw new Error(`Gemini failed. ${errors.join(" | ")}`);
 }
 
+// A build can render the page more than once; share one run (and one set of
+// Gemini calls) per process for a few minutes instead of repeating it.
+let recent: { at: number; run: Promise<NewsData | null> } | null = null;
+
 /** Pulls the live feeds and builds the briefing. Returns null if no feed could be read. */
-export async function getNewsData(): Promise<NewsData | null> {
+export function getNewsData(): Promise<NewsData | null> {
+  if (recent && Date.now() - recent.at < 10 * 60 * 1000) return recent.run;
+  const run = collectNews();
+  recent = { at: Date.now(), run };
+  run.catch(() => (recent = null));
+  return run;
+}
+
+async function collectNews(): Promise<NewsData | null> {
   const names = Object.keys(FEEDS);
   const settled = await Promise.allSettled(names.map((n) => fetchFeed(n, FEEDS[n])));
   settled.forEach((s, i) => s.status === "rejected" && console.error(`[news] ${names[i]}:`, s.reason));

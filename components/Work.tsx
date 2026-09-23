@@ -152,7 +152,7 @@ export default function Work({ stocks = null, news = null }: Partial<Live>) {
             <SplitReveal text="proudest of." className="serif block italic tracking-[-0.02em]" wordClassName="text-gradient pr-[0.05em]" delay={0.15} />
           </h2>
           <Reveal className="max-w-sm text-muted">
-            <p>Both demos below run on real data. The site re-runs them every few hours, so what you see is current.</p>
+            <p>Both demos below are running live on real data.</p>
           </Reveal>
         </div>
 

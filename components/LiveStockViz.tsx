@@ -323,7 +323,7 @@ export default function LiveStockViz({ data }: { data: StockData }) {
       </AnimatePresence>
 
       <p className="border-t border-line px-5 py-4 font-mono text-[10px] uppercase leading-relaxed tracking-[0.12em] text-dim sm:px-7">
-        Real daily prices from {t.source} · model re-run every 6 hours · for demonstration, not investment advice
+        Prices from {t.source} · not investment advice
       </p>
     </div>
   );

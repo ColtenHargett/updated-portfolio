@@ -28,8 +28,16 @@ export default async function Home() {
 
   // During a background refresh, a failed data source throws so Vercel keeps serving
   // the last good page. At build time we fall back to the offline demos instead.
-  if (process.env.NEXT_PHASE !== PHASE_PRODUCTION_BUILD && (!stocks || !news)) {
-    throw new Error(`Live data unavailable (stocks: ${!!stocks}, news: ${!!news}); keeping the previous page`);
+  const building = process.env.NEXT_PHASE === PHASE_PRODUCTION_BUILD;
+  const briefingMissing = !!process.env.GEMINI_API_KEY && !!news && !news.briefing;
+  if (!building && (!stocks || !news || briefingMissing)) {
+    throw new Error(`Live data incomplete (stocks: ${!!stocks}, news: ${!!news}, briefing: ${!briefingMissing}); keeping the previous page`);
+  }
+  if (building && briefingMissing) {
+    // There's no earlier page to fall back on during a build, so ask Vercel to try
+    // again in 15 minutes instead of waiting the full 6 hours. A fetch with a lower
+    // revalidate shortens the whole page's refresh interval.
+    await fetch("https://feeds.npr.org/1001/rss.xml?briefing-retry", { next: { revalidate: 900 } }).catch(() => {});
   }
 
   return (

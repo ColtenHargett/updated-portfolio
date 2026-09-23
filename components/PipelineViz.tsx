@@ -316,11 +316,6 @@ export default function PipelineViz({ news = null }: { news?: NewsData | null })
         </>
       )}
 
-      {news && (
-        <p className="border-t border-line px-5 py-4 font-mono text-[10px] uppercase leading-relaxed tracking-[0.12em] text-dim sm:px-7">
-          Live · the site re-runs this pipeline every 6 hours on the real feeds{news.briefing ? " · summary written by Gemini" : ""}
-        </p>
-      )}
     </div>
   );
 }

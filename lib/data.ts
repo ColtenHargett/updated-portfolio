@@ -227,7 +227,7 @@ export const strengths = [
   },
   {
     title: "I finish what I start",
-    body: "My projects run end to end, from raw data to a result on a schedule. The two demos on this page are running on live data right now.",
+    body: "My projects run end to end, from raw data to a finished result, without me in the loop. You can see both of them working below.",
   },
 ];
 
