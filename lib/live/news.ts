@@ -163,12 +163,54 @@ export function parseBriefing(text: string): NonNullable<NewsData["briefing"]> |
   return paragraphs.length ? { intro, sections: paragraphs.map((body) => ({ title: "", body })) } : null;
 }
 
+const GEMINI = "https://generativelanguage.googleapis.com/v1beta";
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+/** Ask the API which Flash models this key can use, newest stable version first. */
+export async function discoverFlashModels(key: string): Promise<string[]> {
+  const res = await fetch(`${GEMINI}/models?pageSize=200`, { headers: { "x-goog-api-key": key }, signal: AbortSignal.timeout(8000) });
+  if (!res.ok) throw new Error(`list models: HTTP ${res.status}`);
+  const json = await res.json();
+  const models: { name?: string; supportedGenerationMethods?: string[] }[] = json?.models ?? [];
+  return models
+    .filter((m) => m.name && m.supportedGenerationMethods?.includes("generateContent"))
+    .map((m) => m.name!.replace(/^models\//, ""))
+    .filter((n) => /^gemini-[\d.]+-flash/.test(n) && !/lite|image|tts|audio|live|embed|exp|thinking|robotics|computer/.test(n))
+    .map((n) => ({ n, v: parseFloat(n.match(/^gemini-([\d.]+)/)![1]), preview: /preview/.test(n) }))
+    .sort((a, b) => b.v - a.v || Number(a.preview) - Number(b.preview) || a.n.length - b.n.length)
+    .map((m) => m.n);
+}
+
+type Attempt = { ok: true; briefing: NonNullable<NewsData["briefing"]> } | { ok: false; status: number; error: string };
+
+async function generate(model: string, key: string, text: string, deadline: number): Promise<Attempt> {
+  const res = await fetch(`${GEMINI}/models/${model}:generateContent`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "x-goog-api-key": key },
+    body: JSON.stringify({
+      contents: [{ parts: [{ text }] }],
+      // Thinking models spend part of this budget reasoning before they answer,
+      // so leave plenty of room for the ~200-word briefing itself.
+      generationConfig: { temperature: 0.4, maxOutputTokens: 8192 },
+    }),
+    signal: AbortSignal.timeout(Math.max(1000, Math.min(25000, deadline - Date.now()))),
+  });
+  if (!res.ok) return { ok: false, status: res.status, error: `HTTP ${res.status} ${(await res.text()).slice(0, 200)}` };
+  const json = await res.json();
+  const candidate = json?.candidates?.[0];
+  const out: string = (candidate?.content?.parts ?? [])
+    .filter((p: { thought?: boolean }) => !p.thought)
+    .map((p: { text?: string }) => p.text ?? "")
+    .join("");
+  const briefing = parseBriefing(out);
+  return briefing
+    ? { ok: true, briefing }
+    : { ok: false, status: 200, error: `unusable response (finishReason ${candidate?.finishReason ?? "none"}, ${out.length} chars)` };
+}
+
 async function summarize(stories: NewsStory[], articles: Article[]) {
   const key = process.env.GEMINI_API_KEY;
   if (!key) return null;
-  // Try the configured model first, then Google's rolling "latest Flash" alias,
-  // so a retired model name doesn't silently drop the briefing.
-  const models = [...new Set([process.env.GEMINI_MODEL || "gemini-2.5-flash", "gemini-flash-latest"])];
   const date = new Intl.DateTimeFormat("en-US", {
     weekday: "long",
     month: "long",
@@ -188,36 +230,44 @@ async function summarize(stories: NewsStory[], articles: Article[]) {
         .join("\n\n"),
     )
     .join("\n\n---\n\n");
+  const text = prompt(date, context);
 
+  // Model names get retired, so: an explicit GEMINI_MODEL if set, then Google's rolling
+  // "latest Flash" alias, then whatever Flash models the API says this key can use.
+  // Overload / rate-limit errors (429, 5xx) are retried with a short backoff.
+  const deadline = Date.now() + 45000; // stay well inside Next's 60s page-generation limit
+  const queue = [process.env.GEMINI_MODEL, "gemini-flash-latest"].filter(Boolean) as string[];
+  const tried = new Set<string>();
   const errors: string[] = [];
-  for (const model of models) {
-    try {
-      const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "x-goog-api-key": key },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt(date, context) }] }],
-          // Thinking models spend part of this budget reasoning before they answer,
-          // so leave plenty of room for the ~200-word briefing itself.
-          generationConfig: { temperature: 0.4, maxOutputTokens: 8192 },
-        }),
-        signal: AbortSignal.timeout(30000),
-      });
-      if (!res.ok) throw new Error(`HTTP ${res.status} ${(await res.text()).slice(0, 300)}`);
-      const json = await res.json();
-      const candidate = json?.candidates?.[0];
-      const text: string = (candidate?.content?.parts ?? [])
-        .filter((p: { thought?: boolean }) => !p.thought)
-        .map((p: { text?: string }) => p.text ?? "")
-        .join("");
-      const briefing = parseBriefing(text);
-      if (briefing) {
-        console.log(`[news] briefing from ${model}: ${briefing.sections.length} sections`);
-        return briefing;
+  let discovered = false;
+
+  while (Date.now() < deadline) {
+    let model = queue.find((m) => !tried.has(m));
+    if (!model && !discovered) {
+      discovered = true;
+      try {
+        queue.push(...(await discoverFlashModels(key)).slice(0, 3));
+      } catch (e) {
+        errors.push(e instanceof Error ? e.message : String(e));
       }
-      throw new Error(`unusable response (finishReason ${candidate?.finishReason ?? "none"}, ${text.length} chars)`);
-    } catch (e) {
-      errors.push(`${model}: ${e instanceof Error ? e.message : String(e)}`);
+      model = queue.find((m) => !tried.has(m));
+    }
+    if (!model) break;
+    tried.add(model);
+
+    for (let attempt = 0; attempt < 3 && Date.now() < deadline; attempt++) {
+      try {
+        const r = await generate(model, key, text, deadline);
+        if (r.ok) {
+          console.log(`[news] briefing from ${model}: ${r.briefing.sections.length} sections`);
+          return r.briefing;
+        }
+        errors.push(`${model}: ${r.error}`);
+        if (r.status !== 429 && r.status < 500) break; // 404 etc: move on to the next model
+      } catch (e) {
+        errors.push(`${model}: ${e instanceof Error ? e.message : String(e)}`);
+      }
+      await sleep([1500, 4000][attempt] ?? 0);
     }
   }
   throw new Error(`Gemini failed. ${errors.join(" | ")}`);

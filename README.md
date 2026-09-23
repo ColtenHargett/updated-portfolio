@@ -25,7 +25,7 @@ If a source is down during a refresh, the last good version of the page keeps be
 | Variable | Required | Purpose |
 | --- | --- | --- |
 | `GEMINI_API_KEY` | No | Enables the AI-written news briefing. Without it, the demo lists the most-covered stories instead. |
-| `GEMINI_MODEL` | No | Gemini model id. Defaults to `gemini-2.5-flash`. |
+| `GEMINI_MODEL` | No | Pin a specific Gemini model. By default the site uses `gemini-flash-latest` and, if that fails, the newest Flash model the key has access to. Overload errors are retried. |
 
 Add these in Vercel under **Settings → Environment Variables**, then redeploy.
 
