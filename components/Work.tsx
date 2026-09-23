@@ -4,10 +4,38 @@ import { motion, useScroll, useTransform } from "motion/react";
 import { useRef } from "react";
 import { featured, repoLink, type Featured } from "@/lib/data";
 import StockViz from "./StockViz";
+import LiveStockViz from "./LiveStockViz";
+import type { NewsData, StockData } from "@/lib/live/types";
 import PipelineViz from "./PipelineViz";
 import { ArrowUpRight, Magnetic, Reveal, SectionLabel, SplitReveal, easeOutExpo, trackGlow } from "./ui";
 
-function CaseStudy({ p, flip }: { p: Featured; flip: boolean }) {
+type Live = { stocks: StockData | null; news: NewsData | null };
+
+// When live data loaded, swap the static headline numbers for real ones.
+function liveStats(p: Featured, { stocks, news }: Live): Featured["stats"] {
+  if (p.visual === "stock" && stocks) {
+    const t = stocks.tickers;
+    const avg = t.reduce((s, x) => s + x.backtest.modelMape, 0) / t.length;
+    const beat = t.filter((x) => x.backtest.modelMape < Math.min(x.backtest.closeMape, x.backtest.highMape)).length;
+    const preds = t.reduce((s, x) => s + x.backtest.predictions, 0);
+    return [
+      { value: `${(avg * 100).toFixed(2)}%`, label: "Avg. error, live backtest" },
+      { value: `${beat} / ${t.length}`, label: "Tickers beating both baselines" },
+      { value: preds.toLocaleString("en-US"), label: "Walk-forward predictions" },
+    ];
+  }
+  if (p.visual === "pipeline" && news) {
+    return [
+      { value: String(news.total), label: "Articles read, last 24h" },
+      { value: String(news.counts.filter((c) => c.count > 0).length), label: "News sources" },
+      { value: "0", label: "Manual steps" },
+    ];
+  }
+  return p.stats;
+}
+
+function CaseStudy({ p, flip, live }: { p: Featured; flip: boolean; live: Live }) {
+  const stats = liveStats(p, live);
   const ref = useRef<HTMLElement>(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end start"] });
   const numY = useTransform(scrollYProgress, [0, 1], ["30%", "-30%"]);
@@ -50,7 +78,11 @@ function CaseStudy({ p, flip }: { p: Featured; flip: boolean }) {
         <Reveal className="lg:col-span-7">
           <div className="lg:sticky lg:top-28">
             <div onPointerMove={trackGlow} className="glow-card overflow-hidden rounded-[28px] bg-gradient-to-b from-[#101018] to-ink-2">
-              {p.visual === "stock" ? <StockViz /> : <PipelineViz />}
+              {p.visual === "stock" ? (
+                live.stocks ? <LiveStockViz data={live.stocks} /> : <StockViz />
+              ) : (
+                <PipelineViz news={live.news} />
+              )}
             </div>
           </div>
         </Reveal>
@@ -87,7 +119,7 @@ function CaseStudy({ p, flip }: { p: Featured; flip: boolean }) {
           </div>
 
           <Reveal className="mt-10 grid grid-cols-3 gap-4">
-            {p.stats.map((s) => (
+            {stats.map((s) => (
               <div key={s.label}>
                 <p className="text-3xl font-medium tracking-[-0.04em] sm:text-4xl">{s.value}</p>
                 <p className="mt-1.5 text-xs leading-snug text-muted">{s.label}</p>
@@ -108,7 +140,7 @@ function CaseStudy({ p, flip }: { p: Featured; flip: boolean }) {
   );
 }
 
-export default function Work() {
+export default function Work({ stocks = null, news = null }: Partial<Live>) {
   return (
     <section id="work" className="relative py-28 sm:py-36">
       <div className="pointer-events-none absolute inset-x-0 top-0 h-[60vh] bg-[radial-gradient(50%_60%_at_50%_0%,rgba(139,123,255,0.12),transparent)]" />
@@ -126,7 +158,7 @@ export default function Work() {
 
         <div className="mt-20 space-y-32 sm:space-y-40">
           {featured.map((p, i) => (
-            <CaseStudy key={p.id} p={p} flip={i % 2 === 1} />
+            <CaseStudy key={p.id} p={p} flip={i % 2 === 1} live={{ stocks, news }} />
           ))}
         </div>
       </div>

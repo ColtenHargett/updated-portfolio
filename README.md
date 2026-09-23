@@ -13,6 +13,22 @@ npm run build    # production build
 npm run lint     # type-check
 ```
 
+## Live project demos
+
+The homepage is static, but Vercel regenerates it in the background every 6 hours (`revalidate` in `app/page.tsx`), so both featured projects run on real data:
+
+- **Stock Market Predictor**: pulls 5 years of daily prices for AAPL, NVDA, AMD and GOOGL (Yahoo Finance, with Stooq as a fallback) and runs a TypeScript port of the project's model (`lib/live/model.ts`): the same 11 features, the same standardized 5-nearest-neighbor predictor, and the same walk-forward backtest against both baselines. The port was checked against the original Python and matches it to floating-point precision.
+- **News Summary Agent**: reads the same five RSS feeds over the last 24 hours, groups articles into stories by TF-IDF similarity, and has Gemini write the briefing with the project's prompt (`lib/live/news.ts`).
+
+If a source is down during a refresh, the last good version of the page keeps being served. If data is unavailable at build time, the offline demos are shown instead.
+
+| Variable | Required | Purpose |
+| --- | --- | --- |
+| `GEMINI_API_KEY` | No | Enables the AI-written news briefing. Without it, the demo lists the most-covered stories instead. |
+| `GEMINI_MODEL` | No | Gemini model id. Defaults to `gemini-2.5-flash`. |
+
+Add these in Vercel under **Settings → Environment Variables**, then redeploy.
+
 ## Editing content
 
 All copy (projects, journey, principles, stats, links) lives in [`lib/data.ts`](lib/data.ts).
