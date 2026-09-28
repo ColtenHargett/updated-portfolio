@@ -40,9 +40,16 @@ function eastern(iso: string) {
   const [y, m, d, h, min] = [+parts.year, +parts.month, +parts.day, +parts.hour % 24, +parts.minute];
   const weekday = WEEKDAYS[new Date(Date.UTC(y, m - 1, d)).getUTCDay()];
   return {
+    hour: h,
     date: `${weekday}, ${MONTHS[m - 1]} ${d}, ${y}`,
     time: `${h % 12 || 12}:${String(min).padStart(2, "0")} ${h < 12 ? "AM" : "PM"} ET`,
   };
+}
+
+// "Morning run" only when it really ran in the morning; a late retry is labeled honestly.
+function briefingLabel(iso: string) {
+  const t = eastern(iso);
+  return `${t.hour >= 6 && t.hour < 10 ? "Morning run" : "Updated"} · ${t.time}`;
 }
 
 function Inbox({ news, inView }: { news: NewsData; inView: boolean }) {
@@ -194,7 +201,7 @@ export default function PipelineViz({ news = null }: { news?: NewsData | null })
       <div className="flex items-center justify-between px-5 pt-5 font-mono text-[11px] uppercase tracking-[0.14em] text-muted sm:px-7 sm:pt-6">
         <span className="flex items-center gap-2">
           <span className="h-1.5 w-1.5 animate-pulse-soft rounded-full bg-mint" />
-          {news?.briefing ? `Morning run · ${eastern(news.briefing.generatedAt).time}` : news ? `Last run · ${eastern(news.generatedAt).time}` : "Morning run · 7 AM ET"}
+          {news?.briefing ? briefingLabel(news.briefing.generatedAt) : news ? `Last run · ${eastern(news.generatedAt).time}` : "Morning run · 7 AM ET"}
         </span>
         <span className="hidden text-dim sm:inline">
           {news ? `${news.total} articles · ${news.stories.length} stories retrieved` : "scrape → store → summarize → send"}
