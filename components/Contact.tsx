@@ -9,7 +9,7 @@ import { ArrowUpRight, Magnetic, Reveal, SectionLabel, SplitReveal, easeOutExpo,
 const channels = [
   { label: "LinkedIn", value: "in/colten-hargett", href: site.linkedin },
   { label: "GitHub", value: "@ColtenHargett", href: site.github },
-  { label: "Résumé", value: "resume.pdf", href: site.resume },
+  { label: "Résumé", value: "Download PDF", href: site.resume },
 ];
 
 export default function Contact() {

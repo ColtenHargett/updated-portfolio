@@ -10,6 +10,10 @@ const securityHeaders = [
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
+  // Keep the old résumé link working.
+  async redirects() {
+    return [{ source: "/resume.pdf", destination: "/Colten-Hargett-Resume.pdf", permanent: true }];
+  },
   async headers() {
     return [{ source: "/(.*)", headers: securityHeaders }];
   },

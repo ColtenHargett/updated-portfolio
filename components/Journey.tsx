@@ -7,6 +7,7 @@ import { Reveal, SectionLabel, SplitReveal, easeOutExpo } from "./ui";
 
 const kindStyle = {
   education: { label: "Education", dot: "bg-iris", text: "text-iris" },
+  work: { label: "Internship", dot: "bg-ember", text: "text-ember" },
   leadership: { label: "Leadership", dot: "bg-peach", text: "text-peach" },
   community: { label: "Community", dot: "bg-mint", text: "text-mint" },
 } as const;

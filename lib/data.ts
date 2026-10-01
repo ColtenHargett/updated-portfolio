@@ -9,7 +9,7 @@ export const site = {
   linkedin: "https://www.linkedin.com/in/colten-hargett",
   github: "https://github.com/ColtenHargett",
   projectsRepo: "https://github.com/ColtenHargett/portfolio-projects",
-  resume: "/resume.pdf",
+  resume: "/Colten-Hargett-Resume.pdf",
   url: "https://coltenhargett.com",
   description:
     "Colten Hargett studies computer science and data science at Loyola University Maryland. Projects in machine learning, AI and automation.",
@@ -238,7 +238,7 @@ export type JourneyItem = {
   place: string;
   body: string;
   points?: string[];
-  kind: "education" | "leadership" | "community";
+  kind: "education" | "work" | "leadership" | "community";
 };
 
 export const journey: JourneyItem[] = [
@@ -248,8 +248,17 @@ export const journey: JourneyItem[] = [
     org: "Loyola University Maryland",
     place: "Baltimore, MD",
     body: "Double-majoring in computer science and data science, and building machine learning and automation projects alongside my coursework.",
-    points: ["Hyman Science Scholars Program", "Alpha Kappa Psi", "Information Systems Student Organization"],
+    points: ["Hyman Science Scholars Program", "Alpha Kappa Psi"],
     kind: "education",
+  },
+  {
+    period: "Summer 2026",
+    title: "IT Intern",
+    org: "Cabell Childress Group",
+    place: "Glen Allen, VA",
+    body: "Built a Python dashboard that pulls lead data from the firm's CRM API so the team can track its whole pipeline in one place. Also set up automated follow-ups and drip campaigns, and designed pages for the firm's website with custom CSS.",
+    points: ["Python", "CRM API", "Marketing automation", "Squarespace + CSS"],
+    kind: "work",
   },
   {
     period: "Summer 2025",
@@ -294,7 +303,7 @@ export const bio = {
   photo: null as string | null,
   paragraphs: [
     "I grew up in Glen Allen, Virginia, just outside Richmond, and now I'm at Loyola University Maryland studying computer science and data science as part of the Hyman Science Scholars program.",
-    "I like building things from scratch. Sometimes that's software, like the projects on this page, and sometimes it's a brand or a small business. The work I enjoy most is where a technical problem meets a creative one.",
+    "I like building things from scratch. Sometimes that's software, like the projects on this page, and sometimes it's a brand or a small business. The work I enjoy most is where a technical problem meets a creative one. This past summer I got to do both as an IT intern at Cabell Childress Group, building pages for the firm's website and a Python dashboard on top of its CRM.",
     "I spent three summers managing a pool and a staff of 30+ lifeguards, which taught me to stay calm under pressure and own a problem until it's solved. At Loyola, Alpha Kappa Psi has given me a community that pushes me to grow, both personally and professionally.",
     "When I'm not in class or working on something new, I'm usually on a court playing pickleball or volleyball, or volunteering with James River Greyhounds, which I've done since 2020.",
   ],
@@ -303,7 +312,8 @@ export const bio = {
     { label: "Studying", value: "B.S. CS + B.S. Data Science, '29" },
     { label: "Into", value: "Machine learning, automation, building products" },
     { label: "Looking for", value: "Software, data and ML internships" },
-    { label: "Involved in", value: "Alpha Kappa Psi · ISSO" },
+    { label: "Experience", value: "IT Intern, Cabell Childress Group" },
+    { label: "Involved in", value: "Alpha Kappa Psi" },
     { label: "Off the clock", value: "Pickleball · volleyball" },
   ],
 };

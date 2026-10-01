@@ -25,7 +25,7 @@ const toolbox = [
   { group: "Languages", items: ["Python", "Java", "HTML / CSS", "Unix shell"] },
   { group: "Data & ML", items: ["pandas", "NumPy", "scikit-learn", "yfinance"] },
   { group: "AI systems", items: ["Gemini API", "LangChain", "ChromaDB", "RAG"] },
-  { group: "Tools", items: ["Git & GitHub", "PyCharm", "Vercel"] },
+  { group: "Tools", items: ["Git & GitHub", "REST APIs", "Squarespace", "Vercel"] },
 ];
 
 export default function About() {
