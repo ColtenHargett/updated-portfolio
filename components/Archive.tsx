@@ -1,23 +1,35 @@
 "use client";
 
 import { AnimatePresence, motion, useMotionValue, useSpring } from "motion/react";
-import { useState, type PointerEvent } from "react";
+import { useRef, useState, type PointerEvent } from "react";
 import { archive, repoLink, site, type ArchiveItem } from "@/lib/data";
 import { ArrowUpRight, Reveal, SectionLabel, SplitReveal, easeOutExpo } from "./ui";
 
-const filters = ["All", "AI / ML", "Python", "Java"] as const;
+const filters = ["All", "AI / ML", "Python", "Java", "Shell"] as const;
 type Filter = (typeof filters)[number];
 
 const langColor: Record<ArchiveItem["category"], string> = {
   "AI / ML": "bg-iris",
   Python: "bg-peach",
   Java: "bg-mint",
+  Shell: "bg-fg/60",
 };
+
+// Rows shown before "Show all"
+const PREVIEW = 12;
 
 export default function Archive() {
   const [filter, setFilter] = useState<Filter>("All");
   const [hovered, setHovered] = useState<ArchiveItem | null>(null);
+  const [expanded, setExpanded] = useState(false);
+  const listRef = useRef<HTMLDivElement>(null);
   const items = filter === "All" ? archive : archive.filter((a) => a.category === filter);
+  const visible = expanded ? items : items.slice(0, PREVIEW);
+
+  const toggle = () => {
+    if (expanded) listRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    setExpanded(!expanded);
+  };
 
   const mx = useMotionValue(0);
   const my = useMotionValue(0);
@@ -62,7 +74,7 @@ export default function Archive() {
           </Reveal>
         </div>
 
-        <div className="relative mt-14" onPointerMove={onMove} onPointerLeave={() => setHovered(null)}>
+        <div ref={listRef} className="relative mt-14 scroll-mt-24" onPointerMove={onMove} onPointerLeave={() => setHovered(null)}>
           <div className="hidden grid-cols-12 gap-4 border-b border-line pb-3 font-mono text-[11px] uppercase tracking-[0.14em] text-dim md:grid">
             <span className="col-span-1">No.</span>
             <span className="col-span-4">Project</span>
@@ -73,7 +85,7 @@ export default function Archive() {
 
           <motion.ul layout className="relative">
             <AnimatePresence mode="popLayout" initial={false}>
-              {items.map((a) => {
+              {visible.map((a) => {
                 const n = archive.indexOf(a) + 1;
                 return (
                   <motion.li
@@ -119,6 +131,22 @@ export default function Archive() {
               })}
             </AnimatePresence>
           </motion.ul>
+
+          {items.length > PREVIEW && (
+            <div className="mt-8 flex justify-center">
+              <button
+                type="button"
+                onClick={toggle}
+                aria-expanded={expanded}
+                className="group inline-flex min-h-11 items-center gap-2 rounded-full border border-line-strong px-5 py-2.5 text-sm transition-colors hover:border-fg hover:bg-fg hover:text-ink"
+              >
+                {expanded ? "Show fewer" : `Show all ${items.length} projects`}
+                <span aria-hidden className={`transition-transform duration-500 ${expanded ? "rotate-180" : ""}`}>
+                  ↓
+                </span>
+              </button>
+            </div>
+          )}
 
           {/* cursor-following terminal preview (desktop) */}
           <motion.div

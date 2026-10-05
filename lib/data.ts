@@ -111,11 +111,12 @@ export const featured: Featured[] = [
 export type ArchiveItem = {
   title: string;
   description: string;
-  category: "AI / ML" | "Python" | "Java";
+  category: "AI / ML" | "Python" | "Java" | "Shell";
   tags: string[];
   path: string;
 };
 
+// Strongest first: the list shows the top rows until "Show all" is clicked.
 export const archive: ArchiveItem[] = [
   {
     title: "Stock Market Predictor",
@@ -139,11 +140,39 @@ export const archive: ArchiveItem[] = [
     path: "Java/Restaurant Order System/",
   },
   {
+    title: "List Performance Study",
+    description: "Times ArrayList against LinkedList and finds a 150-second vs 0.2-second gap.",
+    category: "Java",
+    tags: ["Big O", "gnuplot"],
+    path: "Java/List Performance Study/",
+  },
+  {
     title: "Sorting Benchmark",
     description: "Races three sorting algorithms on up to 480,000 numbers and charts the results.",
     category: "Java",
     tags: ["Big O", "Performance"],
     path: "Java/Sorting Benchmark/",
+  },
+  {
+    title: "Sorted Contact Book",
+    description: "A phonebook on a linked list I built from scratch that stays alphabetized.",
+    category: "Java",
+    tags: ["Linked List"],
+    path: "Java/Sorted Contact Book/",
+  },
+  {
+    title: "Word Alphabetizer",
+    description: "Sorts words with a hand-built binary search tree and three traversals.",
+    category: "Java",
+    tags: ["BST", "Recursion"],
+    path: "Java/Word Alphabetizer/",
+  },
+  {
+    title: "Palindrome Finder",
+    description: "Recursively checks 104,000 dictionary words and finds 160 palindromes.",
+    category: "Java",
+    tags: ["Recursion", "File I/O"],
+    path: "Java/Palindrome Finder/",
   },
   {
     title: "Fantasy Team Manager",
@@ -158,6 +187,34 @@ export const archive: ArchiveItem[] = [
     category: "Java",
     tags: ["Generics", "OOP Design"],
     path: "Java/Band Directory/",
+  },
+  {
+    title: "Text Processing",
+    description: "One-line data cleaning with grep, sed and awk: logs, XML, phone numbers, movie profits.",
+    category: "Shell",
+    tags: ["Regex", "awk", "sed"],
+    path: "Shell/Text Processing/",
+  },
+  {
+    title: "Bash Scripts",
+    description: "Small command-line tools: a calculator, a file-extension counter and more.",
+    category: "Shell",
+    tags: ["Bash"],
+    path: "Shell/Bash Scripts/",
+  },
+  {
+    title: "Shape Hierarchy",
+    description: "2D shapes built with inheritance, an interface and shared polygon math.",
+    category: "Java",
+    tags: ["OOP", "Interfaces"],
+    path: "Java/Shape Hierarchy/",
+  },
+  {
+    title: "Bookstore Inventory",
+    description: "A bookstore inventory loaded from a file into a HashMap, with search and edits.",
+    category: "Java",
+    tags: ["HashMap", "File I/O"],
+    path: "Java/Bookstore Inventory/",
   },
   {
     title: "Movie Analyzer",
@@ -181,11 +238,74 @@ export const archive: ArchiveItem[] = [
     path: "Python/Song Analyzer/",
   },
   {
+    title: "Sandwich Stack",
+    description: "Build a sandwich one layer at a time on a stack I wrote from scratch.",
+    category: "Java",
+    tags: ["Stack"],
+    path: "Java/Sandwich Stack/",
+  },
+  {
+    title: "To-Do List",
+    description: "Add, insert, check off and remove tasks in the terminal.",
+    category: "Java",
+    tags: ["ArrayList"],
+    path: "Java/To-Do List/",
+  },
+  {
+    title: "Gradebook",
+    description: "Stores grades for a class and reports averages and top scores.",
+    category: "Java",
+    tags: ["Arrays", "Sorting"],
+    path: "Java/Gradebook/",
+  },
+  {
+    title: "Sphere Collisions",
+    description: "3D spheres that calculate their own volume and detect collisions.",
+    category: "Java",
+    tags: ["OOP", "Geometry"],
+    path: "Java/Sphere Collisions/",
+  },
+  {
     title: "Morse Code Translator",
     description: "Translates text to Morse code and back.",
     category: "Python",
     tags: ["Parsing"],
     path: "Python/Morse Code Translator/",
+  },
+  {
+    title: "ATM Simulation",
+    description: "A console ATM with deposits, withdrawals and balances.",
+    category: "Java",
+    tags: ["OOP", "CLI"],
+    path: "Java/ATM Simulation.java",
+  },
+  {
+    title: "Grocery List Maker",
+    description: "Make and edit a grocery list in the console.",
+    category: "Java",
+    tags: ["Collections", "CLI"],
+    path: "Java/Grocery List Maker.java",
+  },
+  {
+    title: "Personality Test",
+    description: "A scored personality quiz in the terminal.",
+    category: "Java",
+    tags: ["CLI"],
+    path: "Java/Personality Test.java",
+  },
+  {
+    title: "Lottery Quick Pick",
+    description: "Generates eight lottery tickets of six unique numbers.",
+    category: "Java",
+    tags: ["Loops", "Random"],
+    path: "Java/Lottery Quick Pick/",
+  },
+  {
+    title: "Grocery Checkout",
+    description: "Totals a grocery order, adds bag fees and checks it against a budget.",
+    category: "Java",
+    tags: ["Scanner"],
+    path: "Java/Grocery Checkout/",
   },
   {
     title: "Dice Rolling Simulator",
@@ -214,27 +334,6 @@ export const archive: ArchiveItem[] = [
     category: "Python",
     tags: ["Game"],
     path: "Python/Rock,Paper,Scissors Rendition.py",
-  },
-  {
-    title: "ATM Simulation",
-    description: "A console ATM with deposits, withdrawals and balances.",
-    category: "Java",
-    tags: ["OOP", "CLI"],
-    path: "Java/ATM Simulation.java",
-  },
-  {
-    title: "Grocery List Maker",
-    description: "Make and edit a grocery list in the console.",
-    category: "Java",
-    tags: ["Collections", "CLI"],
-    path: "Java/Grocery List Maker.java",
-  },
-  {
-    title: "Personality Test",
-    description: "A scored personality quiz in the terminal.",
-    category: "Java",
-    tags: ["CLI"],
-    path: "Java/Personality Test.java",
   },
   {
     title: "Java Exercises",
