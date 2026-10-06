@@ -19,7 +19,7 @@ export const metadata: Metadata = {
   },
   description: site.description,
   authors: [{ name: site.name, url: site.url }],
-  keywords: ["Colten Hargett", "portfolio", "software engineer", "machine learning", "data science", "Loyola University Maryland", "Python", "AI"],
+  keywords: ["Colten Hargett", "portfolio", "software engineer", "machine learning", "data science", "Loyola University Maryland", "Python", "Java", "AI"],
   openGraph: {
     type: "website",
     url: site.url,
@@ -49,6 +49,7 @@ const jsonLd = {
   jobTitle: "Computer Science & Data Science Student",
   alumniOf: { "@type": "CollegeOrUniversity", name: site.school },
   sameAs: [site.linkedin, site.github],
+  knowsAbout: ["Python", "Java", "Machine learning", "Data science", "Data structures", "Algorithms", "RAG pipelines", "Bash", "Linux"],
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

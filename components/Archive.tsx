@@ -61,7 +61,7 @@ export default function Archive() {
                     type="button"
                     aria-pressed={filter === f}
                     onClick={() => setFilter(f)}
-                    className={`relative rounded-full px-3.5 py-2.5 text-sm transition-colors sm:px-4 sm:py-2 ${filter === f ? "text-ink" : "text-muted hover:text-fg"}`}
+                    className={`relative whitespace-nowrap rounded-full px-3 py-2.5 text-sm transition-colors sm:px-4 sm:py-2 ${filter === f ? "text-ink" : "text-muted hover:text-fg"}`}
                   >
                     {filter === f && <motion.span layoutId="archive-pill" className="absolute inset-0 rounded-full bg-fg" transition={{ type: "spring", stiffness: 400, damping: 34 }} />}
                     <span className="relative">

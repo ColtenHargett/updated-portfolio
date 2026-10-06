@@ -38,7 +38,9 @@ export const marquee = [
   "Data Science",
   "Automation",
   "HTML / CSS",
-  "Unix",
+  "Linux",
+  "Bash",
+  "Regex",
 ];
 
 export type Featured = {

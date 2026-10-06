@@ -22,7 +22,8 @@ function Word({ word, progress, range }: { word: string; progress: MotionValue<n
 }
 
 const toolbox = [
-  { group: "Languages", items: ["Python", "Java", "HTML / CSS", "Unix shell"] },
+  { group: "Languages", items: ["Python", "Java", "Bash", "HTML / CSS"] },
+  { group: "CS core", items: ["Data structures", "Algorithms", "OOP design", "Linux"] },
   { group: "Data & ML", items: ["pandas", "NumPy", "scikit-learn", "yfinance"] },
   { group: "AI systems", items: ["Gemini API", "LangChain", "ChromaDB", "RAG"] },
   { group: "Tools", items: ["Git & GitHub", "REST APIs", "Squarespace", "Vercel"] },
@@ -79,7 +80,7 @@ export default function About() {
                   What I <span className="serif italic text-iris">use</span>
                 </p>
               </div>
-              <div className="grid grid-cols-2 gap-6 sm:grid-cols-4">
+              <div className="grid grid-cols-2 gap-6 sm:grid-cols-3 xl:grid-cols-5">
                 {toolbox.map((g) => (
                   <div key={g.group}>
                     <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-dim">{g.group}</p>
