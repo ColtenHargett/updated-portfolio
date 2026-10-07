@@ -430,7 +430,7 @@ export const journey: JourneyItem[] = [
 export const bio = {
   // Drop a photo in /public (e.g. /public/colten.jpg) and set its path here.
   // Leave as null to show the monogram card instead.
-  photo: null as string | null,
+  photo: "/colten.jpg" as string | null,
   paragraphs: [
     "I grew up in Glen Allen, Virginia, just outside Richmond, and now I'm at Loyola University Maryland studying computer science and data science as part of the Hyman Science Scholars program.",
     "I like building things from scratch. Sometimes that's software, like the projects on this page, and sometimes it's a brand or a small business. The work I enjoy most is where a technical problem meets a creative one. This past summer I got to do both as an IT intern at Cabell Childress Group, building pages for the firm's website and a Python dashboard on top of its CRM.",

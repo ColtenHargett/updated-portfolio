@@ -21,10 +21,10 @@ function Portrait() {
         <motion.div style={{ y }} className="absolute -inset-[8%]">
           <Image
             src={bio.photo}
-            alt={`Portrait of ${site.name}`}
+            alt={`${site.name} looking out over the ocean`}
             fill
             sizes="(min-width: 1024px) 40vw, 100vw"
-            className="object-cover grayscale-[35%] transition-[filter] duration-700 group-hover:grayscale-0"
+            className="object-cover object-[40%_0%] grayscale-[35%] transition-[filter] duration-700 group-hover:grayscale-0"
             priority={false}
           />
         </motion.div>
